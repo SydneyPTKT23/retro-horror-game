@@ -1,0 +1,16 @@
+{
+    "name": "SLC.RetroHorror.Core",
+    "rootNamespace": "SLC.RetroHorror.Core",
+    "references": [
+        "GUID:30870860be475454eaa75f55d43f8d61"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
