@@ -19,14 +19,19 @@ namespace SLC.RetroHorror.Core
         [SerializeField] private float rayLength = 0.1f;
         [SerializeField] private float raySphereRadius = 0.1f;
 
-        private Health m_health;
         private CharacterController m_characterController;
+        private InputHandler m_inputHandler;
+        private Health m_health;
 
         private RaycastHit m_hitInfo;
 
         [Space, Header("DEBUG")]
         [SerializeField] private Vector2 m_inputVector;
-        [SerializeField] private Vector3 m_finalMovementVector;
+
+        [SerializeField] private Vector3 m_finalMoveDirection;
+        [Space]
+        [SerializeField] private Vector3 m_finalMoveVector;
+
         [Space]
         [SerializeField] private float m_currentSpeed;
         [Space]
@@ -39,6 +44,8 @@ namespace SLC.RetroHorror.Core
         private void Start()
         {
             m_characterController = GetComponent<CharacterController>();
+
+            m_inputHandler = GetComponent<InputHandler>();
 
             m_health = GetComponent<Health>();
             m_health.OnDie += OnDie;
@@ -75,8 +82,8 @@ namespace SLC.RetroHorror.Core
         {
             Vector3 t_origin = transform.position + m_characterController.center;
             bool t_hitGround = Physics.SphereCast(t_origin, raySphereRadius, Vector3.down, out m_hitInfo, m_finalRayLength, groundLayer);
-            Debug.DrawRay(t_origin, Vector3.down * rayLength, Color.red);
 
+            Debug.DrawRay(t_origin, Vector3.down * rayLength, Color.red);
             m_isGrounded = t_hitGround;
         }
 
@@ -87,34 +94,55 @@ namespace SLC.RetroHorror.Core
 
         private void CalculateMovementDirection()
         {
-            m_inputVector.x = Input.GetAxisRaw("Horizontal");
-            m_inputVector.y = Input.GetAxisRaw("Vertical");
+            m_inputVector = m_inputHandler.InputVector;
 
-            float x = m_inputVector.x * Time.deltaTime * turnSpeed;
-            float y = m_inputVector.y * Time.deltaTime * m_currentSpeed;
+            Vector3 t_desiredDirection = m_inputVector.y * transform.forward;
+            Vector3 t_flatDirection = FlattenVectorOnSlopes(t_desiredDirection);
 
-            m_characterController.Move(transform.forward * y);
-            m_characterController.transform.Rotate(0, x, 0);
+            m_finalMoveDirection = t_flatDirection;
+
+            Vector3 t_finalVector = m_currentSpeed * m_finalMoveDirection;
+
+            m_finalMoveVector.x = t_finalVector.x;
+            m_finalMoveVector.z = t_finalVector.z;
+
+            if (m_characterController.isGrounded)
+                m_finalMoveVector.y += t_finalVector.y;
+
+
+            float t_desiredRotation = m_inputVector.x * turnSpeed;
+            transform.Rotate(0, t_desiredRotation * Time.deltaTime, 0);
+        }
+
+        private Vector3 FlattenVectorOnSlopes(Vector3 t_flattenedVector)
+        {
+            if (m_isGrounded)
+            {
+                t_flattenedVector = Vector3.ProjectOnPlane(t_flattenedVector, m_hitInfo.normal);
+            }
+
+            return t_flattenedVector;
         }
 
         private void CalculateMovementSpeed()
         {
             m_currentSpeed = Input.GetKey(KeyCode.LeftShift) && CanRun() ? runSpeed : walkSpeed;
-            m_currentSpeed = m_inputVector.y == 0.0f ? 0.0f : walkSpeed;
-            m_currentSpeed = m_inputVector.y == -1 ? m_currentSpeed * moveBackwardModifier : m_currentSpeed;
+            m_currentSpeed = !m_inputHandler.InputDetected ? 0.0f : walkSpeed;
+            m_currentSpeed = m_inputHandler.InputVector.y == -1 ? m_currentSpeed * moveBackwardModifier : m_currentSpeed;
         }
 
         private void AddDownForce()
         {
-            if (m_characterController.isGrounded && m_finalMovementVector.y < 0)
-                m_finalMovementVector.y = -stickToGroundForce;
+            // If grounded, add 
+            if (m_characterController.isGrounded)
+                m_finalMoveVector.y = -stickToGroundForce;
 
-            m_finalMovementVector += gravityMultiplier * Time.deltaTime * Physics.gravity;
+            m_finalMoveVector += gravityMultiplier * Time.deltaTime * Physics.gravity;
         }
 
         private void AddMovement()
         {
-            m_characterController.Move(m_finalMovementVector * Time.deltaTime);
+            m_characterController.Move(m_finalMoveVector * Time.deltaTime);
         }
     }
 }
