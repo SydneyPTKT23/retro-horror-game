@@ -4,7 +4,7 @@ namespace SLC.RetroHorror.Core
 {
     public class InteractionController : MonoBehaviour
     {
-        [Space, Header("Interaction Settings")]
+        [Header("Interaction Settings")]
         [SerializeField] private Transform m_interactionCollider;
         [SerializeField] private bool m_isInteracting;
 

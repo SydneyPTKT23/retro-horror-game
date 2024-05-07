@@ -6,8 +6,6 @@ namespace SLC.RetroHorror.Core
     {
         private Vector2 m_inputVector;
 
-
-
         public Vector2 InputVector => m_inputVector;
         public bool InputDetected => m_inputVector != Vector2.zero;
 
