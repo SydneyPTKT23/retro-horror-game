@@ -5,7 +5,6 @@ namespace SLC.RetroHorror.Core
 {
     public class Health : MonoBehaviour
     {
-        [Space, Header("Stats")]
         [SerializeField] private int maximumHealth = 100;
         [SerializeField] private float criticalHealthRatio = 0.3f;
 
