@@ -54,6 +54,11 @@ namespace SLC.RetroHorror.Input
             }
         }
 
+        private void OnDisable()
+        {
+            inputMap.Player.Disable();
+        }
+
         public void EnablePlayerInput()
         {
             inputMap.Player.Enable();
@@ -68,12 +73,13 @@ namespace SLC.RetroHorror.Input
 
         public void OnMove(InputAction.CallbackContext context)
         {
-            MoveEvent?.Invoke(obj:context.ReadValue<Vector2>());
+            MoveEvent?.Invoke(obj: context.ReadValue<Vector2>());
+            Debug.Log(context.ReadValue<Vector2>());
         }
 
         public void OnInteract(InputAction.CallbackContext context)
         {
-            if (context.phase == InputActionPhase.Performed)
+            if (context.phase == InputActionPhase.Started)
             {
                 InteractEvent?.Invoke();
             }

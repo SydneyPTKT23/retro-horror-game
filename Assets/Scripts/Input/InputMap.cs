@@ -115,7 +115,7 @@ namespace SLC.RetroHorror.Input
                     ""name"": ""Interact"",
                     ""type"": ""Button"",
                     ""id"": ""f2dff033-1fbf-41a0-9529-78fe67ba4187"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": ""Hold"",
                     ""initialStateCheck"": false
@@ -124,7 +124,7 @@ namespace SLC.RetroHorror.Input
                     ""name"": ""Crouch"",
                     ""type"": ""Button"",
                     ""id"": ""574d9617-07a3-47d5-b682-e5b7a958786c"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -133,7 +133,7 @@ namespace SLC.RetroHorror.Input
                     ""name"": ""Jump"",
                     ""type"": ""Button"",
                     ""id"": ""ffc6db61-c575-4811-a2b6-1ef2c05c5de4"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -142,7 +142,7 @@ namespace SLC.RetroHorror.Input
                     ""name"": ""Previous"",
                     ""type"": ""Button"",
                     ""id"": ""473ed59a-f54b-4be9-823a-ba53cf579b55"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -151,7 +151,7 @@ namespace SLC.RetroHorror.Input
                     ""name"": ""Next"",
                     ""type"": ""Button"",
                     ""id"": ""aa28f1c6-3e97-499a-93ff-d9d34c80c7da"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -160,7 +160,7 @@ namespace SLC.RetroHorror.Input
                     ""name"": ""Sprint"",
                     ""type"": ""Button"",
                     ""id"": ""2e377b09-26d3-4597-b187-f121addc1b86"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false

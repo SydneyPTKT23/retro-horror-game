@@ -1,25 +1,25 @@
+using SLC.RetroHorror.Input;
 using UnityEngine;
 
 namespace SLC.RetroHorror.Core
 {
     public class InteractionController : MonoBehaviour
     {
+        [Header("Input Variables")]
+        [SerializeField] private InputReader inputReader;
+        private bool interactHeld = false;
+
         [Header("Interaction Settings")]
         [SerializeField] private Transform m_interactionCollider;
-        [SerializeField] private bool m_isInteracting;
 
-        private void Update()
+        private void Start()
         {
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                CheckForInteractables();
-            }
+            inputReader.InteractEvent += HandleInteractDown;
+            inputReader.InteractEventCancelled += HandleInteractUp;
         }
 
         private void CheckForInteractables()
         {
-            if (m_isInteracting) return;
-
             // Collect valid interactions into an array of interactables.
             Collider[] t_collisions = Physics.OverlapBox(m_interactionCollider.position,
                 m_interactionCollider.localScale * 0.5f, transform.rotation, ~0, QueryTriggerInteraction.Collide);
@@ -35,16 +35,15 @@ namespace SLC.RetroHorror.Core
             }
         }
 
-        public void OnInteractionStart()
+        private void HandleInteractDown()
         {
-            // Time.timeScale = 0.0f;
-            m_isInteracting = true;
+            CheckForInteractables();
+            interactHeld = true;
         }
 
-        public void OnInteractionEnd()
+        private void HandleInteractUp()
         {
-            // Time.timeScale = 1.0f;
-            m_isInteracting = false;
+            interactHeld = false;
         }
 
         private void OnDrawGizmos()
