@@ -878,6 +878,12 @@ MonoBehaviour:
   runSpeed: 5
   turnSpeed: 100
   moveBackwardModifier: 0.5
+  quickturnTime: 0.5
+  quickturnCooldown: 0.1
+  maxStamina: 100
+  staminaDrainPerSecond: 10
+  staminaRegenDelay: 5
+  staminaRegenPerSecond: 5
   gravityMultiplier: 2.5
   stickToGroundForce: 2
   groundLayer:

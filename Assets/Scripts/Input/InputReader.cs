@@ -77,7 +77,6 @@ namespace SLC.RetroHorror.Input
         public void OnMove(InputAction.CallbackContext context)
         {
             MoveEvent?.Invoke(obj: context.ReadValue<Vector2>());
-            Debug.Log(context.ReadValue<Vector2>());
         }
 
         public void OnInteract(InputAction.CallbackContext context)
