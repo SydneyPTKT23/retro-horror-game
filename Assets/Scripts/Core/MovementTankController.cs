@@ -17,6 +17,12 @@ namespace SLC.RetroHorror.Core
         [SerializeField] private float runSpeed = 5.0f;
         [SerializeField] private float turnSpeed = 180.0f;
         [SerializeField] private float moveBackwardModifier = 0.5f;
+        [SerializeField] private float quickturnTime = 0.2f;
+        [SerializeField] private float maxStamina = 100f;
+        [SerializeField] private float staminaDrainPerSecond = 10f;
+        [SerializeField] private float staminaRegenDelay = 5f;      //seconds
+        private WaitForSeconds staminaRegenWait;
+        [SerializeField] private float staminaRegenPerSecond = 5f;
 
         [Space, Header("Ground Settings")]
         [SerializeField] private float gravityMultiplier = 2.5f;
@@ -31,10 +37,9 @@ namespace SLC.RetroHorror.Core
 
         private RaycastHit hitInfo;
 
-        [Header("Acceleration & Timing Settings")]
+        [Header("Acceleration Settings")]
         [SerializeField] private float inputScaler = 5f;
         [SerializeField] private float movementScaler = 5f;
-        [SerializeField] private float quickturnTime = 0.2f;
 
         [Space, Header("DEBUG")]
         [SerializeField] private Vector2 inputVector;
@@ -46,13 +51,14 @@ namespace SLC.RetroHorror.Core
         [Space]
         [SerializeField] private float finalRayLength;
         [SerializeField] private bool isGrounded;
+        private float currentStamina;
 
         public float killHeight = -50.0f;
         public bool IsDead { get; private set; }
 
-        //Helper variables
+        //Helper variables not visible in editor
         private bool quickturnActive = false;
-        // private WaitForSeconds quickturnWait;
+        private bool staminaDrainActive = false;
 
         #region Default Methods
 
@@ -65,6 +71,8 @@ namespace SLC.RetroHorror.Core
 
             finalRayLength = rayLength + characterController.center.y;
             isGrounded = true;
+            currentStamina = maxStamina;
+            staminaRegenWait = new(staminaRegenDelay);
             // quickturnWait = new(quickturnTime);
 
             //Subscribe to input methods
@@ -89,7 +97,7 @@ namespace SLC.RetroHorror.Core
 
                 CalculateMovementSpeed();
                 ApplyGravity();
-            } 
+            }
         }
 
         #endregion
@@ -141,6 +149,8 @@ namespace SLC.RetroHorror.Core
             //If turning left, turn amount is set to negative to go along with existing left turn
             float turnAmount = inputVector.x < 0 ? -180f / quickturnTime : 180f / quickturnTime;
 
+            
+
             while (timer < quickturnTime)
             {
                 timer += Time.deltaTime;
@@ -152,6 +162,8 @@ namespace SLC.RetroHorror.Core
         }
 
         #endregion
+
+        #region Controller Methods
 
         private void OnDie()
         {
@@ -220,5 +232,30 @@ namespace SLC.RetroHorror.Core
 
             finalMoveVector += gravityMultiplier * Time.deltaTime * Physics.gravity;
         }
+
+        private IEnumerator DrainStamina()
+        {
+            staminaDrainActive = true;
+            float drainAmount = 0f;     //drain gaaaaaang
+
+            while (currentStamina > 0f)
+            {
+                drainAmount = staminaDrainPerSecond * Time.deltaTime;
+                currentStamina -= drainAmount;
+                yield return null;
+            }
+
+            shiftDown = false;
+            staminaDrainActive = false;
+        }
+
+        private IEnumerator RegenerateStamina()
+        {
+            yield return staminaRegenWait;
+
+
+        }
+        
+        #endregion
     }
 }
