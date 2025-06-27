@@ -10,7 +10,7 @@ namespace SLC.RetroHorror.Core
         private bool interactHeld = false;
 
         [Header("Interaction Settings")]
-        [SerializeField] private Transform m_interactionCollider;
+        [SerializeField] private Transform interactionCollider;
 
         private void Start()
         {
@@ -21,8 +21,8 @@ namespace SLC.RetroHorror.Core
         private void CheckForInteractables()
         {
             // Collect valid interactions into an array of interactables.
-            Collider[] t_collisions = Physics.OverlapBox(m_interactionCollider.position,
-                m_interactionCollider.localScale * 0.5f, transform.rotation, ~0, QueryTriggerInteraction.Collide);
+            Collider[] t_collisions = Physics.OverlapBox(interactionCollider.position,
+                interactionCollider.localScale * 0.5f, transform.rotation, ~0, QueryTriggerInteraction.Collide);
 
             for (int i = 0; i < t_collisions.Length; i++)
             {
@@ -49,7 +49,7 @@ namespace SLC.RetroHorror.Core
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.green;
-            Gizmos.matrix = m_interactionCollider.localToWorldMatrix;
+            Gizmos.matrix = interactionCollider.localToWorldMatrix;
             Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
         }
     }

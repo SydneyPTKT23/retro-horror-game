@@ -26,25 +26,25 @@ namespace SLC.RetroHorror.Core
         [SerializeField] private float rayLength = 0.1f;
         [SerializeField] private float raySphereRadius = 0.1f;
 
-        private CharacterController m_characterController;
-        private Health m_health;
+        private CharacterController characterController;
+        private Health health;
 
-        private RaycastHit m_hitInfo;
+        private RaycastHit hitInfo;
 
         [Header("Acceleration Settings")]
         [SerializeField] private float inputScaler = 5f;
         [SerializeField] private float movementScaler = 5f;
 
         [Space, Header("DEBUG")]
-        [SerializeField] private Vector2 m_inputVector;
+        [SerializeField] private Vector2 inputVector;
         [SerializeField] private Vector2 scaledMovementInput;
         [SerializeField] private float scaledMovementSpeed;
-        [SerializeField] private Vector3 m_finalMoveVector;
+        [SerializeField] private Vector3 finalMoveVector;
         [Space]
-        [SerializeField] private float m_currentSpeed;
+        [SerializeField] private float currentSpeed;
         [Space]
-        [SerializeField] private float m_finalRayLength;
-        [SerializeField] private bool m_isGrounded;
+        [SerializeField] private float finalRayLength;
+        [SerializeField] private bool isGrounded;
 
         public float killHeight = -50.0f;
         public bool IsDead { get; private set; }
@@ -53,13 +53,13 @@ namespace SLC.RetroHorror.Core
 
         private void Start()
         {
-            m_characterController = GetComponent<CharacterController>();
+            characterController = GetComponent<CharacterController>();
 
-            m_health = GetComponent<Health>();
-            m_health.OnDie += OnDie;
+            health = GetComponent<Health>();
+            health.OnDie += OnDie;
 
-            m_finalRayLength = rayLength + m_characterController.center.y;
-            m_isGrounded = true;
+            finalRayLength = rayLength + characterController.center.y;
+            isGrounded = true;
 
             //Subscribe to input methods
             inputReader.EnablePlayerInput();
@@ -71,10 +71,10 @@ namespace SLC.RetroHorror.Core
             // Autokill player if they manage to fall out of the map to prevent softlocking.
             if (!IsDead && transform.position.y < killHeight)
             {
-                m_health.Kill();
+                health.Kill();
             }
 
-            if (m_characterController)
+            if (characterController)
             {
                 CheckIfGrounded();
 
@@ -99,17 +99,17 @@ namespace SLC.RetroHorror.Core
 
         private void HandleMoveVector(Vector2 _moveVector)
         {
-            m_inputVector = _moveVector;
+            inputVector = _moveVector;
         }
 
         private Vector2 GetScaledInput()
         {
-            return scaledMovementInput = Vector2.Lerp(scaledMovementInput, m_inputVector, Time.deltaTime * inputScaler);
+            return scaledMovementInput = Vector2.Lerp(scaledMovementInput, inputVector, Time.deltaTime * inputScaler);
         }
 
         private float GetScaledSpeed()
         {
-            return scaledMovementSpeed = Mathf.Lerp(scaledMovementSpeed, m_currentSpeed, Time.deltaTime * movementScaler);
+            return scaledMovementSpeed = Mathf.Lerp(scaledMovementSpeed, currentSpeed, Time.deltaTime * movementScaler);
         }
 
         private void HandleShiftDown()
@@ -132,12 +132,12 @@ namespace SLC.RetroHorror.Core
         private void CheckIfGrounded()
         {
             // Manually check for grounded because the CharacterController default is less reliable.
-            Vector3 t_origin = transform.position + m_characterController.center;
-            bool t_hitGround = Physics.SphereCast(t_origin, raySphereRadius, Vector3.down, out m_hitInfo, m_finalRayLength, groundLayer);
+            Vector3 t_origin = transform.position + characterController.center;
+            bool t_hitGround = Physics.SphereCast(t_origin, raySphereRadius, Vector3.down, out hitInfo, finalRayLength, groundLayer);
 
             // Draw the groundcheck for convenience.
             Debug.DrawRay(t_origin, Vector3.down * rayLength, Color.red);
-            m_isGrounded = t_hitGround;
+            isGrounded = t_hitGround;
         }
 
         private bool CanRun()
@@ -152,44 +152,44 @@ namespace SLC.RetroHorror.Core
 
             Vector3 t_finalVector = GetScaledSpeed() * t_flatDirection;
 
-            m_finalMoveVector.x = t_finalVector.x;
-            m_finalMoveVector.z = t_finalVector.z;
+            finalMoveVector.x = t_finalVector.x;
+            finalMoveVector.z = t_finalVector.z;
 
-            if (m_characterController.isGrounded)
-                m_finalMoveVector.y += t_finalVector.y;
+            if (characterController.isGrounded)
+                finalMoveVector.y += t_finalVector.y;
 
-            m_characterController.Move(m_finalMoveVector * Time.deltaTime);
+            characterController.Move(finalMoveVector * Time.deltaTime);
         }
 
-        private Vector3 FlattenVectorOnSlopes(Vector3 t_flattenedVector)
+        private Vector3 FlattenVectorOnSlopes(Vector3 _flattenedVector)
         {
             // Correct movement on slopes to keep speed consistent.
-            if (m_isGrounded)
-                t_flattenedVector = Vector3.ProjectOnPlane(t_flattenedVector, m_hitInfo.normal);
+            if (isGrounded)
+                _flattenedVector = Vector3.ProjectOnPlane(_flattenedVector, hitInfo.normal);
 
-            return t_flattenedVector;
+            return _flattenedVector;
         }
 
         private void HandleRotation()
         {
-            float t_desiredRotation = m_inputVector.x * turnSpeed;
+            float t_desiredRotation = inputVector.x * turnSpeed;
             transform.Rotate(0, t_desiredRotation * Time.deltaTime, 0);
         }
 
         private void CalculateMovementSpeed()
         {
-            m_currentSpeed = shiftDown && CanRun() ? runSpeed : walkSpeed;
-            m_currentSpeed = m_inputVector == Vector2.zero ? 0f : m_currentSpeed;
-            m_currentSpeed = m_inputVector.y < -inputThreshold ? m_currentSpeed * moveBackwardModifier : m_currentSpeed;
+            currentSpeed = shiftDown && CanRun() ? runSpeed : walkSpeed;
+            currentSpeed = inputVector == Vector2.zero ? 0f : currentSpeed;
+            currentSpeed = inputVector.y < -inputThreshold ? currentSpeed * moveBackwardModifier : currentSpeed;
         }
 
         private void ApplyGravity()
         {
             // If grounded, add a little bit of extra downward force just in case.
-            if (m_characterController.isGrounded)
-                m_finalMoveVector.y = -stickToGroundForce;
+            if (characterController.isGrounded)
+                finalMoveVector.y = -stickToGroundForce;
 
-            m_finalMoveVector += gravityMultiplier * Time.deltaTime * Physics.gravity;
+            finalMoveVector += gravityMultiplier * Time.deltaTime * Physics.gravity;
         }
     }
 }
