@@ -885,11 +885,15 @@ MonoBehaviour:
     m_Bits: 1
   rayLength: 0.1
   raySphereRadius: 0.1
-  m_inputVector: {x: 0, y: 0}
-  m_finalMoveVector: {x: 0, y: 0, z: 0}
-  m_currentSpeed: 0
-  m_finalRayLength: 0
-  m_isGrounded: 0
+  inputScaler: 5
+  movementScaler: 5
+  inputVector: {x: 0, y: 0}
+  scaledMovementInput: {x: 0, y: 0}
+  scaledMovementSpeed: 0
+  finalMoveVector: {x: 0, y: 0, z: 0}
+  currentSpeed: 0
+  finalRayLength: 0
+  isGrounded: 0
   killHeight: -50
 --- !u!4 &1228539145
 Transform:
@@ -921,8 +925,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputReader: {fileID: 11400000, guid: e4f4773117baebe428786a4242613620, type: 2}
-  m_interactionCollider: {fileID: 936270456}
-  m_isInteracting: 0
+  interactionCollider: {fileID: 936270456}
 --- !u!114 &1228539147
 MonoBehaviour:
   m_ObjectHideFlags: 0

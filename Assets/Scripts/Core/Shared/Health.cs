@@ -18,7 +18,7 @@ namespace SLC.RetroHorror.Core
         public float GetHealthRatio() => CurrentHealth / maximumHealth;
         public bool IsCritical() => GetHealthRatio() <= criticalHealthRatio;
 
-        private bool m_isDead;
+        private bool isDead;
 
         private void Start()
         {
@@ -66,12 +66,12 @@ namespace SLC.RetroHorror.Core
 
         private void HandleDeath()
         {
-            if (m_isDead) { return; }
+            if (isDead) { return; }
 
             if (CurrentHealth <= 0f)
             {
                 // Same thing with the actions as healing and damage.
-                m_isDead = true;
+                isDead = true;
                 OnDie?.Invoke();
             }
         }
