@@ -16,6 +16,7 @@ namespace SLC.RetroHorror.Input
 
         //I'm ngl chief I don't remember if any of these will actually be used. These
         //are only here because they're part of the default input map :p
+        //I'll remove them before any relevant builds if they're not staying
         public event Action AttackEvent;
         public event Action AttackEventCancelled;
         public event Action CrouchEvent;
@@ -24,6 +25,8 @@ namespace SLC.RetroHorror.Input
         public event Action JumpEventCancelled;
         public event Action SprintEvent;
         public event Action SprintEventCancelled;
+        public event Action QuickturnEvent;
+        public event Action QuickturnEventCancelled;
 
         //UI input actions in case we want to use those for something manually
         public event Action<Vector2> NavigateEvent;
@@ -237,6 +240,18 @@ namespace SLC.RetroHorror.Input
             else if (context.phase == InputActionPhase.Canceled)
             {
                 PreviousEventCancelled?.Invoke();
+            }
+        }
+
+        public void OnQuickTurn(InputAction.CallbackContext context)
+        {
+            if (context.phase == InputActionPhase.Started)
+            {
+                QuickturnEvent?.Invoke();
+            }
+            else if (context.phase == InputActionPhase.Canceled)
+            {
+                QuickturnEventCancelled?.Invoke();
             }
         }
 

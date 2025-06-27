@@ -31,9 +31,10 @@ namespace SLC.RetroHorror.Core
 
         private RaycastHit hitInfo;
 
-        [Header("Acceleration Settings")]
+        [Header("Acceleration & Timing Settings")]
         [SerializeField] private float inputScaler = 5f;
         [SerializeField] private float movementScaler = 5f;
+        [SerializeField] private float quickturnTime = 0.2f;
 
         [Space, Header("DEBUG")]
         [SerializeField] private Vector2 inputVector;
@@ -49,6 +50,10 @@ namespace SLC.RetroHorror.Core
         public float killHeight = -50.0f;
         public bool IsDead { get; private set; }
 
+        //Helper variables
+        private bool quickturnActive = false;
+        // private WaitForSeconds quickturnWait;
+
         #region Default Methods
 
         private void Start()
@@ -60,6 +65,7 @@ namespace SLC.RetroHorror.Core
 
             finalRayLength = rayLength + characterController.center.y;
             isGrounded = true;
+            // quickturnWait = new(quickturnTime);
 
             //Subscribe to input methods
             inputReader.EnablePlayerInput();
@@ -68,7 +74,7 @@ namespace SLC.RetroHorror.Core
 
         private void Update()
         {
-            // Autokill player if they manage to fall out of the map to prevent softlocking.
+            //Autokill player if they manage to fall out of the map to prevent softlocking.
             if (!IsDead && transform.position.y < killHeight)
             {
                 health.Kill();
@@ -95,6 +101,7 @@ namespace SLC.RetroHorror.Core
             inputReader.MoveEvent += HandleMoveVector;
             inputReader.SprintEvent += HandleShiftDown;
             inputReader.SprintEventCancelled += HandleShiftUp;
+            inputReader.QuickturnEvent += HandleQuickturn;
         }
 
         private void HandleMoveVector(Vector2 _moveVector)
@@ -122,6 +129,28 @@ namespace SLC.RetroHorror.Core
             shiftDown = false;
         }
 
+        private void HandleQuickturn()
+        {
+            if (!quickturnActive) StartCoroutine(QuickturnLerp());
+        }
+
+        private IEnumerator QuickturnLerp()
+        {
+            quickturnActive = true;
+            float timer = 0f;
+            //If turning left, turn amount is set to negative to go along with existing left turn
+            float turnAmount = inputVector.x < 0 ? -180f / quickturnTime : 180f / quickturnTime;
+
+            while (timer < quickturnTime)
+            {
+                timer += Time.deltaTime;
+                transform.Rotate(0, turnAmount * Time.deltaTime, 0);
+                yield return null;
+            }
+
+            quickturnActive = false;
+        }
+
         #endregion
 
         private void OnDie()
@@ -131,11 +160,11 @@ namespace SLC.RetroHorror.Core
 
         private void CheckIfGrounded()
         {
-            // Manually check for grounded because the CharacterController default is less reliable.
+            //Manually check for grounded because the CharacterController default is less reliable.
             Vector3 t_origin = transform.position + characterController.center;
             bool t_hitGround = Physics.SphereCast(t_origin, raySphereRadius, Vector3.down, out hitInfo, finalRayLength, groundLayer);
 
-            // Draw the groundcheck for convenience.
+            //Draw the groundcheck for convenience.
             Debug.DrawRay(t_origin, Vector3.down * rayLength, Color.red);
             isGrounded = t_hitGround;
         }
@@ -163,7 +192,7 @@ namespace SLC.RetroHorror.Core
 
         private Vector3 FlattenVectorOnSlopes(Vector3 _flattenedVector)
         {
-            // Correct movement on slopes to keep speed consistent.
+            //Correct movement on slopes to keep speed consistent.
             if (isGrounded)
                 _flattenedVector = Vector3.ProjectOnPlane(_flattenedVector, hitInfo.normal);
 
@@ -185,7 +214,7 @@ namespace SLC.RetroHorror.Core
 
         private void ApplyGravity()
         {
-            // If grounded, add a little bit of extra downward force just in case.
+            //If grounded, add a little bit of extra downward force just in case.
             if (characterController.isGrounded)
                 finalMoveVector.y = -stickToGroundForce;
 
