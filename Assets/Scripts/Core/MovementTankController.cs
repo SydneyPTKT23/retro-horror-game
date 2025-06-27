@@ -15,8 +15,21 @@ namespace SLC.RetroHorror.Core
         [Header("Movement Settings")]
         [SerializeField] private float walkSpeed = 3.0f;
         [SerializeField] private float runSpeed = 5.0f;
+        [SerializeField] private float exhaustedMaxSpeedPenaltyMult = 0.6f;
         [SerializeField] private float turnSpeed = 180.0f;
         [SerializeField] private float moveBackwardModifier = 0.5f;
+        [SerializeField] private float quickturnTime = 0.5f;
+        private WaitForSeconds quickturnWait;
+        [SerializeField] private float quickturnCooldown = 0.1f;
+        private WaitForSeconds quickturnCooldownWait;
+        [SerializeField] private float maxStamina = 100f;
+        [SerializeField] private float staminaExhaustionBuffer = 20f;
+        [SerializeField] private float staminaDrainPerSecond = 10f;
+        [SerializeField] private float staminaRegenDelay = 5f;      //seconds
+        [SerializeField] private float staminaRegenExhaustedMult = 1.5f;    //stamina regen delay is multiplied by this if exhausted
+        private float staminaRegenTimer;
+        [SerializeField] private float staminaRegenPerSecond = 5f;
+        [SerializeField] private float staminaRegenStandingMultiplier = 1.5f;
 
         [Space, Header("Ground Settings")]
         [SerializeField] private float gravityMultiplier = 2.5f;
@@ -42,12 +55,46 @@ namespace SLC.RetroHorror.Core
         [SerializeField] private Vector3 finalMoveVector;
         [Space]
         [SerializeField] private float currentSpeed;
+        [SerializeField] private float currentSpeedPenaltyMult = 1f;
         [Space]
         [SerializeField] private float finalRayLength;
         [SerializeField] private bool isGrounded;
 
+        /// <summary>
+        /// Did you mean to use CurrentStamina?
+        /// </summary>
+        [SerializeField] private float currentStamina;
+        private float CurrentStamina
+        {
+            get
+            {
+                return currentStamina;
+            }
+
+            set
+            {
+                if (value < currentStamina && currentStamina < maxStamina)
+                {
+                    StaminaDrained();
+                }
+                currentStamina = value;
+            }
+        }
+
+        [Space, Header("Misc")]
         public float killHeight = -50.0f;
         public bool IsDead { get; private set; }
+
+        //Helper variables not visible in editor
+        private bool IsMoving => currentSpeed > 0f;
+        private bool isExhausted = false;
+        private bool disableMovement = false;       //movement disabling is handled directly in relevant methods
+        private bool quickturnOnCooldown = false;
+        private bool staminaRegenActive = false;
+        private Coroutine staminaDrainCoroutine;
+        private Coroutine staminaExhaustedDrainCoroutine;
+        private Coroutine staminaRegenCoroutine;
+        private LTDescr speedPenaltyTween;
 
         #region Default Methods
 
@@ -58,8 +105,12 @@ namespace SLC.RetroHorror.Core
             health = GetComponent<Health>();
             health.OnDie += OnDie;
 
+            //Initialize variables
             finalRayLength = rayLength + characterController.center.y;
             isGrounded = true;
+            CurrentStamina = maxStamina;
+            quickturnWait = new(quickturnTime);
+            quickturnCooldownWait = new(quickturnCooldown);
 
             //Subscribe to input methods
             inputReader.EnablePlayerInput();
@@ -68,7 +119,7 @@ namespace SLC.RetroHorror.Core
 
         private void Update()
         {
-            // Autokill player if they manage to fall out of the map to prevent softlocking.
+            //Autokill player if they manage to fall out of the map to prevent softlocking.
             if (!IsDead && transform.position.y < killHeight)
             {
                 health.Kill();
@@ -83,7 +134,7 @@ namespace SLC.RetroHorror.Core
 
                 CalculateMovementSpeed();
                 ApplyGravity();
-            } 
+            }
         }
 
         #endregion
@@ -95,6 +146,7 @@ namespace SLC.RetroHorror.Core
             inputReader.MoveEvent += HandleMoveVector;
             inputReader.SprintEvent += HandleShiftDown;
             inputReader.SprintEventCancelled += HandleShiftUp;
+            inputReader.QuickturnEvent += HandleQuickturn;
         }
 
         private void HandleMoveVector(Vector2 _moveVector)
@@ -115,55 +167,94 @@ namespace SLC.RetroHorror.Core
         private void HandleShiftDown()
         {
             shiftDown = true;
+            staminaDrainCoroutine = StartCoroutine(DrainStamina());
         }
 
         private void HandleShiftUp()
         {
             shiftDown = false;
+            if (staminaDrainCoroutine != null) StopCoroutine(staminaDrainCoroutine);
+            if (staminaExhaustedDrainCoroutine != null) StopCoroutine(staminaExhaustedDrainCoroutine);
+            if (speedPenaltyTween != null)
+            {
+                LeanTween.cancel(speedPenaltyTween.id);
+                speedPenaltyTween = null;
+            }
+        }
+
+        private void HandleQuickturn()
+        {
+            if (!quickturnOnCooldown) StartCoroutine(QuickturnLerp());
+        }
+
+        private IEnumerator QuickturnLerp()
+        {
+            quickturnOnCooldown = true;
+            disableMovement = true;
+
+            //Calc new rotation
+            //By default turns clockwise, but if player is turning counterclockwise, respects that
+            float newRotation = inputVector.x < 0 ? 180f : -180f;
+            newRotation += transform.rotation.eulerAngles.y;
+
+            //Start rotation and wait for it to finish
+            LeanTween.rotateY(gameObject, newRotation, quickturnTime).setEaseInOutCubic();
+            yield return quickturnWait;
+
+            yield return quickturnCooldownWait;
+            quickturnOnCooldown = false;
+            disableMovement = false;
         }
 
         #endregion
 
+        #region Controller Methods
+
         private void OnDie()
         {
             IsDead = true;
+            //Cancel all active tweens & coroutines affecting the player gameObject
+            LeanTween.cancelAll(gameObject);
+            StopAllCoroutines();
         }
 
         private void CheckIfGrounded()
         {
-            // Manually check for grounded because the CharacterController default is less reliable.
-            Vector3 t_origin = transform.position + characterController.center;
-            bool t_hitGround = Physics.SphereCast(t_origin, raySphereRadius, Vector3.down, out hitInfo, finalRayLength, groundLayer);
+            //Manually check for grounded because the CharacterController default is less reliable.
+            Vector3 origin = transform.position + characterController.center;
+            bool hitGround = Physics.SphereCast(origin, raySphereRadius, Vector3.down, out hitInfo, finalRayLength, groundLayer);
 
-            // Draw the groundcheck for convenience.
-            Debug.DrawRay(t_origin, Vector3.down * rayLength, Color.red);
-            isGrounded = t_hitGround;
+            //Draw the groundcheck for convenience.
+            Debug.DrawRay(origin, Vector3.down * rayLength, Color.red);
+            isGrounded = hitGround;
         }
 
         private bool CanRun()
         {
-            return true;
+            return !isExhausted;
         }
 
         private void HandleMovement()
         {
-            Vector3 t_desiredDirection = GetScaledInput().y * transform.forward;
-            Vector3 t_flatDirection = FlattenVectorOnSlopes(t_desiredDirection);
+            if (disableMovement) return;
 
-            Vector3 t_finalVector = GetScaledSpeed() * t_flatDirection;
+            Vector3 desiredDirection = GetScaledInput().y * transform.forward;
+            Vector3 flatDirection = FlattenVectorOnSlopes(desiredDirection);
 
-            finalMoveVector.x = t_finalVector.x;
-            finalMoveVector.z = t_finalVector.z;
+            Vector3 finalVector = GetScaledSpeed() * flatDirection;
+
+            finalMoveVector.x = finalVector.x;
+            finalMoveVector.z = finalVector.z;
 
             if (characterController.isGrounded)
-                finalMoveVector.y += t_finalVector.y;
+                finalMoveVector.y += finalVector.y;
 
             characterController.Move(finalMoveVector * Time.deltaTime);
         }
 
         private Vector3 FlattenVectorOnSlopes(Vector3 _flattenedVector)
         {
-            // Correct movement on slopes to keep speed consistent.
+            //Correct movement on slopes to keep speed consistent.
             if (isGrounded)
                 _flattenedVector = Vector3.ProjectOnPlane(_flattenedVector, hitInfo.normal);
 
@@ -172,6 +263,8 @@ namespace SLC.RetroHorror.Core
 
         private void HandleRotation()
         {
+            if (disableMovement) return;
+
             float t_desiredRotation = inputVector.x * turnSpeed;
             transform.Rotate(0, t_desiredRotation * Time.deltaTime, 0);
         }
@@ -179,17 +272,115 @@ namespace SLC.RetroHorror.Core
         private void CalculateMovementSpeed()
         {
             currentSpeed = shiftDown && CanRun() ? runSpeed : walkSpeed;
-            currentSpeed = inputVector == Vector2.zero ? 0f : currentSpeed;
+            currentSpeed *= currentSpeedPenaltyMult;
+            currentSpeed = inputVector.y < 0.05f ? 0f : currentSpeed;
             currentSpeed = inputVector.y < -inputThreshold ? currentSpeed * moveBackwardModifier : currentSpeed;
         }
 
         private void ApplyGravity()
         {
-            // If grounded, add a little bit of extra downward force just in case.
+            //If grounded, add a little bit of extra downward force just in case.
             if (characterController.isGrounded)
                 finalMoveVector.y = -stickToGroundForce;
 
             finalMoveVector += gravityMultiplier * Time.deltaTime * Physics.gravity;
         }
+
+        //This is ran whenever stamina is set to an amount less than it was before
+        //with the exception that if currentStamina was above maxStamina, it's not ran
+        private void StaminaDrained()
+        {
+            if (staminaRegenActive)
+            {
+                staminaRegenTimer = 0f;
+                StopCoroutine(staminaRegenCoroutine);
+                staminaRegenCoroutine = StartCoroutine(RegenerateStamina());
+            }
+            else if (staminaRegenCoroutine == null)
+            {
+                staminaRegenTimer = 0f;
+                staminaRegenCoroutine = StartCoroutine(RegenerateStamina());
+            }
+            else staminaRegenTimer = 0;
+        }
+
+        //This is the coroutine that drains stamina, started when shift is pressed
+        //and ended when shift is released
+        private IEnumerator DrainStamina()
+        {
+            float drainAmount;              //drain gaaaaaang (declaring here so we don't end
+                                            //up with a billion declarations in the loop)
+            while (CurrentStamina > 0f)
+            {
+                //If not moving, keep looping without draining stamina
+                if (!IsMoving)
+                {
+                    yield return null;
+                    continue;
+                }
+
+                drainAmount = staminaDrainPerSecond * Time.deltaTime;
+                CurrentStamina -= drainAmount;
+                yield return null;
+            }
+
+            staminaExhaustedDrainCoroutine = StartCoroutine(ExhaustionDrain());
+        }
+
+        private IEnumerator ExhaustionDrain()
+        {
+            float scaledTweenTime = (CurrentStamina + staminaExhaustionBuffer) / staminaDrainPerSecond;
+            speedPenaltyTween = LeanTween.value(currentSpeedPenaltyMult, exhaustedMaxSpeedPenaltyMult, scaledTweenTime).
+                setOnUpdate((v) => currentSpeedPenaltyMult = v).setEaseInQuad();
+
+            float timeToComplete = 0;
+            while (CurrentStamina > -staminaExhaustionBuffer)
+            {
+                CurrentStamina -= staminaDrainPerSecond * Time.deltaTime;
+                timeToComplete += Time.deltaTime;
+                yield return null;
+            }
+
+            speedPenaltyTween = null;
+            isExhausted = true;
+        }
+
+        private IEnumerator RegenerateStamina()
+        {
+            float realRegenDelay = isExhausted ? staminaRegenDelay * staminaRegenExhaustedMult : staminaRegenDelay;
+            //Delay before stamina starts regenerating, done with a while loop to more
+            //easily restart delay if it's still active and stamina is drained again
+            while (staminaRegenTimer < realRegenDelay)
+            {
+                if (isExhausted && IsMoving && shiftDown) staminaRegenTimer = 0;
+                else staminaRegenTimer += Time.deltaTime;
+                yield return null;
+            }
+
+            staminaRegenActive = true;
+            float realStaminaRegen;
+
+            while (CurrentStamina < maxStamina)
+            {
+                //Regen stamina: if moving, regen normal amount, if still, regen increased amount
+                realStaminaRegen = IsMoving ? staminaRegenPerSecond * Time.deltaTime : staminaRegenPerSecond * staminaRegenStandingMultiplier * Time.deltaTime;
+                CurrentStamina += realStaminaRegen;
+
+                if (isExhausted && CurrentStamina > 25f)
+                {
+                    isExhausted = false;
+                    currentSpeedPenaltyMult = 1;
+                }
+
+                yield return null;
+            }
+
+            //Coroutine is finishing up, reset some variables
+            staminaRegenActive = false;
+            if (CurrentStamina > maxStamina) CurrentStamina = maxStamina;
+            staminaRegenCoroutine = null;
+        }
+        
+        #endregion
     }
 }

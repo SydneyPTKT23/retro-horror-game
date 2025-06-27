@@ -7,7 +7,6 @@ namespace SLC.RetroHorror.Core
     {
         [Header("Input Variables")]
         [SerializeField] private InputReader inputReader;
-        private bool interactHeld = false;
 
         [Header("Interaction Settings")]
         [SerializeField] private Transform interactionCollider;
@@ -20,7 +19,7 @@ namespace SLC.RetroHorror.Core
 
         private void CheckForInteractables()
         {
-            // Collect valid interactions into an array of interactables.
+            //Collect valid interactions into an array of interactables.
             Collider[] t_collisions = Physics.OverlapBox(interactionCollider.position,
                 interactionCollider.localScale * 0.5f, transform.rotation, ~0, QueryTriggerInteraction.Collide);
 
@@ -38,12 +37,11 @@ namespace SLC.RetroHorror.Core
         private void HandleInteractDown()
         {
             CheckForInteractables();
-            interactHeld = true;
         }
 
         private void HandleInteractUp()
         {
-            interactHeld = false;
+            
         }
 
         private void OnDrawGizmos()

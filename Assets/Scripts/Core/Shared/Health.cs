@@ -25,14 +25,14 @@ namespace SLC.RetroHorror.Core
             CurrentHealth = maximumHealth;
         }
 
-        // Call before healing to prevent using healing items at full health.
+        //Call before healing to prevent using healing items at full health.
         public bool CanAddHealth() => CurrentHealth < maximumHealth;
         public void AddHealth(int t_amount)
         {
             CurrentHealth += t_amount;
             CurrentHealth = Mathf.Clamp(CurrentHealth, 0, maximumHealth);
 
-            // When adding health, call the OnHealed action.
+            //When adding health, call the OnHealed action.
             if (t_amount > 0)
             {
                 OnHealed?.Invoke(t_amount);
@@ -46,7 +46,7 @@ namespace SLC.RetroHorror.Core
             CurrentHealth -= t_amount;
             CurrentHealth = Mathf.Clamp(CurrentHealth, 0, maximumHealth);
 
-            // Call the OnDamaged action for damage SFX or animations in other scripts.
+            //Call the OnDamaged action for damage SFX or animations in other scripts.
             if (t_amount > 0)
             {
                 OnDamaged?.Invoke(t_amount, null);
@@ -55,7 +55,7 @@ namespace SLC.RetroHorror.Core
             HandleDeath();
         }
 
-        // Call this function from other scripts to instant kill the character if needed.
+        //Call this function from other scripts to instant kill the character if needed.
         public void Kill()
         {
             CurrentHealth = 0;
@@ -70,7 +70,7 @@ namespace SLC.RetroHorror.Core
 
             if (CurrentHealth <= 0f)
             {
-                // Same thing with the actions as healing and damage.
+                //Same thing with the actions as healing and damage.
                 isDead = true;
                 OnDie?.Invoke();
             }
