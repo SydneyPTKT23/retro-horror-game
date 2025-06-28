@@ -4,6 +4,8 @@ namespace SLC.RetroHorror.Core
     {
         bool IsInteractable { get; }
         string InteractionMessage { get; }
-        void OnInteract();
+        void OnInteract(InteractionController controller);
+        void ActivateIndicator();
+        void DeactivateIndicator();
     }
 }
