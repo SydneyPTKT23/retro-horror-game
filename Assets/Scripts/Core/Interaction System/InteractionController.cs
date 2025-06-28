@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using SLC.RetroHorror.Input;
 using UnityEngine;
 
@@ -5,50 +7,120 @@ namespace SLC.RetroHorror.Core
 {
     public class InteractionController : MonoBehaviour
     {
+        private Transform player;
+
         [Header("Input Variables")]
         [SerializeField] private InputReader inputReader;
 
         [Header("Interaction Settings")]
-        [SerializeField] private Transform interactionCollider;
+        [SerializeField] private BoxCollider interactionCollider;
+        private List<Collider> activeColliders;
 
         private void Start()
         {
+            player = GetComponentInParent<MovementTankController>().transform;
+            if (player == null) Debug.LogError("InteractionController couldn't find MovementController!");
+
+            activeColliders = new();
             inputReader.InteractEvent += HandleInteractDown;
             inputReader.InteractEventCancelled += HandleInteractUp;
         }
 
-        private void CheckForInteractables()
+        private void OnTriggerEnter(Collider other)
         {
-            //Collect valid interactions into an array of interactables.
-            Collider[] t_collisions = Physics.OverlapBox(interactionCollider.position,
-                interactionCollider.localScale * 0.5f, transform.rotation, ~0, QueryTriggerInteraction.Collide);
+            if (other == null) return;
 
-            for (int i = 0; i < t_collisions.Length; i++)
+            if (!activeColliders.Contains(other))
             {
-                InteractableBase t_interactable = t_collisions[i].transform.GetComponent<InteractableBase>();
+                activeColliders.Add(other);
 
-                if (t_interactable != null)
+                //Sort available colliders by distance to player, do interaction with closest interactable
+                activeColliders.OrderBy(col => Vector3.Distance(player.position, transform.position));
+
+                for (int i = 0; i < activeColliders.Count; i++)
                 {
-                    t_interactable.OnInteract();
+                    bool closestActivated = false;
+                    if (activeColliders[i].TryGetComponent<IInteractable>(out var interactable))
+                    {
+                        if (!closestActivated)
+                        {
+                            interactable.ActivateIndicator();
+                            closestActivated = true;
+                        }
+                        else interactable.DeactivateIndicator();
+                    }
+                }
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other == null) return;
+
+            if (activeColliders.Contains(other))
+            {
+                activeColliders.Remove(other);
+
+                //Sort available colliders by distance to player, do interaction with closest interactable
+                activeColliders.OrderBy(col => Vector3.Distance(player.position, transform.position));
+
+                for (int i = 0; i < activeColliders.Count; i++)
+                {
+                    bool closestActivated = false;
+                    if (activeColliders[i].TryGetComponent<IInteractable>(out var interactable))
+                    {
+                        if (!closestActivated)
+                        {
+                            interactable.ActivateIndicator();
+                            closestActivated = true;
+                        }
+                        else interactable.DeactivateIndicator();
+                    }
+                }
+            }
+        }
+
+        private void TryInteract()
+        {
+            //Sort available colliders by distance to player, do interaction with closest interactable
+            activeColliders.OrderBy(col => Vector3.Distance(player.position, transform.position));
+
+            for (int i = 0; i < activeColliders.Count; i++)
+            {
+                if (activeColliders[i].TryGetComponent<IInteractable>(out var interactable))
+                {
+                    interactable.OnInteract(this);
+                    break;
                 }
             }
         }
 
         private void HandleInteractDown()
         {
-            CheckForInteractables();
+            TryInteract();
         }
 
         private void HandleInteractUp()
         {
-            
+
+        }
+
+        public void RemoveColliderFromInteractableList(Collider collider)
+        {
+            if (collider == null) return;
+
+            if (activeColliders.Contains(collider))
+            {
+                activeColliders.Remove(collider);
+            }
         }
 
         private void OnDrawGizmos()
         {
-            Gizmos.color = Color.green;
-            Gizmos.matrix = interactionCollider.localToWorldMatrix;
-            Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+            if (activeColliders == null) Gizmos.color = Color.green;
+            else Gizmos.color = activeColliders.Count == 0 ? Color.green : Color.red;
+            Gizmos.matrix = interactionCollider.transform.localToWorldMatrix;
+            Gizmos.DrawWireCube(Vector3.zero, interactionCollider.size);
         }
     }
 }
