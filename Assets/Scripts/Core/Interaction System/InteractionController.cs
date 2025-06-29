@@ -14,85 +14,70 @@ namespace SLC.RetroHorror.Core
 
         [Header("Interaction Settings")]
         [SerializeField] private BoxCollider interactionCollider;
-        private List<Collider> activeColliders;
+        private List<InteractableBase> interactables;
 
         private void Start()
         {
-            player = GetComponentInParent<MovementTankController>().transform;
+            player = GetComponentInParent<PlayerController>().transform;
             if (player == null) Debug.LogError("InteractionController couldn't find MovementController!");
 
-            activeColliders = new();
+            interactables = new();
             inputReader.InteractEvent += HandleInteractDown;
             inputReader.InteractEventCancelled += HandleInteractUp;
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other == null) return;
+            if (other == null || !other.TryGetComponent<InteractableBase>(out var interactable)) return;
 
-            if (!activeColliders.Contains(other))
+            if (!interactables.Contains(interactable))
             {
-                activeColliders.Add(other);
+                interactables.Add(interactable);
 
                 //Sort available colliders by distance to player, do interaction with closest interactable
-                activeColliders.OrderBy(col => Vector3.Distance(player.position, transform.position));
+                interactables.OrderBy(col => Vector3.Distance(player.position, col.transform.position));
 
-                for (int i = 0; i < activeColliders.Count; i++)
+                for (int i = 0; i < interactables.Count; i++)
                 {
                     bool closestActivated = false;
-                    if (activeColliders[i].TryGetComponent<IInteractable>(out var interactable))
+                    if (!closestActivated)
                     {
-                        if (!closestActivated)
-                        {
-                            interactable.ActivateIndicator();
-                            closestActivated = true;
-                        }
-                        else interactable.DeactivateIndicator();
+                        interactables[i].ActivateIndicator();
+                        closestActivated = true;
                     }
+                    else interactables[i].DeactivateIndicator();
                 }
             }
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (other == null) return;
+            if (other == null || !other.TryGetComponent<InteractableBase>(out var interactable)) return;
 
-            if (activeColliders.Contains(other))
+            if (interactables.Contains(interactable))
             {
-                activeColliders.Remove(other);
+                interactables.Remove(interactable);
 
                 //Sort available colliders by distance to player, do interaction with closest interactable
-                activeColliders.OrderBy(col => Vector3.Distance(player.position, transform.position));
+                interactables.OrderBy(col => Vector3.Distance(player.position, col.transform.position));
 
-                for (int i = 0; i < activeColliders.Count; i++)
+                for (int i = 0; i < interactables.Count; i++)
                 {
                     bool closestActivated = false;
-                    if (activeColliders[i].TryGetComponent<IInteractable>(out var interactable))
+                    if (!closestActivated)
                     {
-                        if (!closestActivated)
-                        {
-                            interactable.ActivateIndicator();
-                            closestActivated = true;
-                        }
-                        else interactable.DeactivateIndicator();
+                        interactables[i].ActivateIndicator();
+                        closestActivated = true;
                     }
+                    else interactables[i].DeactivateIndicator();
                 }
             }
         }
 
         private void TryInteract()
         {
-            //Sort available colliders by distance to player, do interaction with closest interactable
-            activeColliders.OrderBy(col => Vector3.Distance(player.position, transform.position));
-
-            for (int i = 0; i < activeColliders.Count; i++)
-            {
-                if (activeColliders[i].TryGetComponent<IInteractable>(out var interactable))
-                {
-                    interactable.OnInteract(this);
-                    break;
-                }
-            }
+            if (interactables == null || interactables.Count == 0) return;
+            interactables[0].OnInteract(this);
         }
 
         private void HandleInteractDown()
@@ -105,20 +90,20 @@ namespace SLC.RetroHorror.Core
 
         }
 
-        public void RemoveColliderFromInteractableList(Collider collider)
+        public void RemoveColliderFromInteractableList(InteractableBase _interactable)
         {
-            if (collider == null) return;
+            if (_interactable == null) return;
 
-            if (activeColliders.Contains(collider))
+            if (interactables.Contains(_interactable))
             {
-                activeColliders.Remove(collider);
+                interactables.Remove(_interactable);
             }
         }
 
         private void OnDrawGizmos()
         {
-            if (activeColliders == null) Gizmos.color = Color.green;
-            else Gizmos.color = activeColliders.Count == 0 ? Color.green : Color.red;
+            if (interactables == null) Gizmos.color = Color.green;
+            else Gizmos.color = interactables.Count == 0 ? Color.green : Color.red;
             Gizmos.matrix = interactionCollider.transform.localToWorldMatrix;
             Gizmos.DrawWireCube(Vector3.zero, interactionCollider.size);
         }
