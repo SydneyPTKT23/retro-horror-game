@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace SLC.RetroHorror.Core
 {
     public class TestInteractable : InteractableBase
@@ -9,7 +7,7 @@ namespace SLC.RetroHorror.Core
             base.OnInteract(controller);
 
             Destroy(gameObject);
-            controller.RemoveColliderFromInteractableList(gameObject.GetComponent<Collider>());
+            controller.RemoveColliderFromInteractableList(this);
         }
     }
 }
