@@ -23,6 +23,7 @@ namespace SLC.RetroHorror.Core
         private WaitForSeconds quickturnWait;
         [SerializeField] private float quickturnCooldown = 0.1f;
         private WaitForSeconds quickturnCooldownWait;
+        [Space]
         [SerializeField] private float maxStamina = 100f;
         [SerializeField] private float staminaExhaustionBuffer = 20f;
         [SerializeField] private float staminaDrainPerSecond = 10f;
@@ -31,6 +32,12 @@ namespace SLC.RetroHorror.Core
         private float staminaRegenTimer;
         [SerializeField] private float staminaRegenPerSecond = 5f;
         [SerializeField] private float staminaRegenStandingMultiplier = 1.5f;
+        [Space]
+        private bool useOldCamera;
+        [SerializeField] private float cameraChangeDelayForMovement = 0.5f;
+        private float oldCameraYRotation;
+        private Vector2 oldMovementInput;
+        private Coroutine cameraChangeCoroutine;
 
         [Space, Header("Ground Settings")]
         [SerializeField] private float gravityMultiplier = 2.5f;
@@ -265,7 +272,8 @@ namespace SLC.RetroHorror.Core
         {
             if (disableMovement) return;
 
-            float cameraYRotation = Camera.main.transform.rotation.eulerAngles.y;
+            float cameraYRotation = useOldCamera ? oldCameraYRotation : Camera.main.transform.rotation.eulerAngles.y;
+
             Vector3 desiredDirection = new(GetScaledInput().x, 0, GetScaledInput().y);
 
             Quaternion relativeForward = Quaternion.identity;
@@ -423,6 +431,31 @@ namespace SLC.RetroHorror.Core
             staminaRegenActive = false;
             if (CurrentStamina > maxStamina) CurrentStamina = maxStamina;
             staminaRegenCoroutine = null;
+        }
+
+        public void CameraChanged()
+        {
+            if (cameraChangeCoroutine != null) StopCoroutine(cameraChangeCoroutine);
+            cameraChangeCoroutine = StartCoroutine(CameraChangeHandler());
+        }
+
+        private IEnumerator CameraChangeHandler()
+        {
+            useOldCamera = true;
+            oldCameraYRotation = Camera.main.transform.rotation.eulerAngles.y;
+            oldMovementInput = inputVector;
+
+            float timer = 0f;
+
+            while (timer < cameraChangeDelayForMovement)
+            {
+                timer += Time.deltaTime;
+                if (oldMovementInput != inputVector) break;
+                yield return null;
+            }
+
+            useOldCamera = false;
+            cameraChangeCoroutine = null;
         }
         
         #endregion
