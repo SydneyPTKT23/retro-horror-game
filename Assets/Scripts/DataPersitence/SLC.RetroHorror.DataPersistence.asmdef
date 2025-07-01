@@ -1,6 +1,6 @@
 {
     "name": "SLC.RetroHorror.DataPersistence",
-    "rootNamespace": "",
+    "rootNamespace": "SLC.RetroHorror.DataPersistence",
     "references": [
         ""
     ],

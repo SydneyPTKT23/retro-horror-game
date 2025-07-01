@@ -5,28 +5,34 @@ using UnityEngine.InputSystem;
 namespace SLC.RetroHorror.Input
 {
     [CreateAssetMenu (menuName = "InputReader")]
-    public class InputReader : ScriptableObject, InputMap.IPlayerActions, InputMap.IUIActions
+    public class InputReader : ScriptableObject, InputMap.IPlayerActions, InputMap.IUIActions, InputMap.IDialogueActions
     {
         private InputMap inputMap;
         public bool PlayerInputsEnabled => inputMap.Player.enabled;
+        public bool DialogueInputsEnabled => inputMap.Dialogue.enabled;
 
         public event Action<Vector2> MoveEvent;
         public event Action InteractEvent;
         public event Action InteractEventCancelled;
-
-        //I'm ngl chief I don't remember if any of these will actually be used. These
-        //are only here because they're part of the default input map :p
-        //I'll remove them before any relevant builds if they're not staying
         public event Action AttackEvent;
         public event Action AttackEventCancelled;
-        public event Action CrouchEvent;
-        public event Action CrouchEventCancelled;
-        public event Action JumpEvent;
-        public event Action JumpEventCancelled;
         public event Action SprintEvent;
         public event Action SprintEventCancelled;
         public event Action QuickturnEvent;
         public event Action QuickturnEventCancelled;
+
+        //I'm ngl chief I don't remember if any of these will actually be used. These
+        //are only here because they're part of the default input map :p
+        //I'll remove them before any relevant builds if they're not staying
+        public event Action CrouchEvent;
+        public event Action CrouchEventCancelled;
+        public event Action JumpEvent;
+        public event Action JumpEventCancelled;
+
+        //Dialogue input actions
+        public event Action<Vector2> DialogueNavigateEvent;
+        public event Action DialogueSubmitEvent;
+        public event Action DialogueSubmitCancelledEvent;
 
         //UI input actions in case we want to use those for something manually
         public event Action<Vector2> NavigateEvent;
@@ -53,7 +59,9 @@ namespace SLC.RetroHorror.Input
             {
                 inputMap = new();
                 inputMap.Player.SetCallbacks(this);
+                inputMap.Dialogue.SetCallbacks(this);
                 inputMap.Player.Disable();
+                inputMap.Dialogue.Disable();
             }
         }
 
@@ -65,11 +73,18 @@ namespace SLC.RetroHorror.Input
         public void EnablePlayerInput()
         {
             inputMap.Player.Enable();
+            inputMap.Dialogue.Disable();
         }
 
         public void DisablePlayerInput()
         {
             inputMap.Player.Disable();
+        }
+
+        public void EnableDialogueInput()
+        {
+            inputMap.Player.Disable();
+            inputMap.Dialogue.Enable();
         }
 
         #region player input actions
@@ -251,6 +266,24 @@ namespace SLC.RetroHorror.Input
             else if (context.phase == InputActionPhase.Canceled)
             {
                 QuickturnEventCancelled?.Invoke();
+            }
+        }
+
+        public void OnDialogueNavigate(InputAction.CallbackContext context)
+        {
+            DialogueNavigateEvent?.Invoke(obj: context.ReadValue<Vector2>());
+        }
+
+        public void OnDialogueSubmit(InputAction.CallbackContext context)
+        {
+            Debug.Log("inputted submit");
+            if (context.phase == InputActionPhase.Started)
+            {
+                DialogueSubmitEvent?.Invoke();
+            }
+            else if (context.phase == InputActionPhase.Canceled)
+            {
+                DialogueSubmitCancelledEvent?.Invoke();
             }
         }
 
