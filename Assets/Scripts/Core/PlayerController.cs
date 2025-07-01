@@ -1,11 +1,12 @@
 using System.Collections;
 using SLC.RetroHorror.Input;
+using SLC.RetroHorror.DataPersistence;
 using UnityEngine;
 
 namespace SLC.RetroHorror.Core
 {
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : SaveableMonoBehavior
     {
         [Header("Input Variables")]
         [SerializeField] private InputReader inputReader;
@@ -457,7 +458,22 @@ namespace SLC.RetroHorror.Core
             useOldCamera = false;
             cameraChangeCoroutine = null;
         }
-        
+
+        #endregion
+
+        #region Data Persistence
+
+        public override void Load(SaveData data)
+        {
+            //Disable and reset movement so loading goes smoothly
+            characterController.enabled = false;
+            scaledMovementSpeed = 0f;
+
+            base.Load(data);
+
+            characterController.enabled = true;
+        }
+
         #endregion
     }
 }
