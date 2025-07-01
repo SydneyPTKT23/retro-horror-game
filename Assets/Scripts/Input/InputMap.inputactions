@@ -481,7 +481,7 @@
                     "name": "Submit",
                     "type": "Button",
                     "id": "f0e5c21b-7098-450d-8773-154c3d2be1e1",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -819,6 +819,28 @@
                 },
                 {
                     "name": "",
+                    "id": "da638394-9663-470b-8ed9-b4fe0b190ac5",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Submit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f63a20b6-ae5e-43b8-89b3-3fbb45fc9c8e",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Submit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "fc326920-9fc7-40d4-b5db-2079d40817bf",
                     "path": "*/{Cancel}",
                     "interactions": "",
@@ -935,6 +957,67 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "MiddleClick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Dialogue",
+            "id": "1d666d27-ddff-465e-9901-3b5d33c9dc42",
+            "actions": [
+                {
+                    "name": "DialogueSubmit",
+                    "type": "Button",
+                    "id": "a7ff71ae-35bc-43ac-bda8-6ffb79e94bc0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "68f7f9c0-6469-42c9-b421-dcc788964bdb",
+                    "path": "*/{Submit}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Gamepad;Touch;Joystick;XR",
+                    "action": "DialogueSubmit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ec073c1b-1474-46f1-8509-086c0e6c29c3",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DialogueSubmit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f5ae993e-35c2-4cc2-8566-af0c925f34d5",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DialogueSubmit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b30b4451-bf3c-441a-bfa7-ef33a4fae9d2",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DialogueSubmit",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

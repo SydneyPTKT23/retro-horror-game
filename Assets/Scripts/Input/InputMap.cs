@@ -569,7 +569,7 @@ namespace SLC.RetroHorror.Input
                     ""name"": ""Submit"",
                     ""type"": ""Button"",
                     ""id"": ""f0e5c21b-7098-450d-8773-154c3d2be1e1"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -907,6 +907,28 @@ namespace SLC.RetroHorror.Input
                 },
                 {
                     ""name"": """",
+                    ""id"": ""da638394-9663-470b-8ed9-b4fe0b190ac5"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Submit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f63a20b6-ae5e-43b8-89b3-3fbb45fc9c8e"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Submit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""fc326920-9fc7-40d4-b5db-2079d40817bf"",
                     ""path"": ""*/{Cancel}"",
                     ""interactions"": """",
@@ -1027,6 +1049,67 @@ namespace SLC.RetroHorror.Input
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Dialogue"",
+            ""id"": ""1d666d27-ddff-465e-9901-3b5d33c9dc42"",
+            ""actions"": [
+                {
+                    ""name"": ""DialogueSubmit"",
+                    ""type"": ""Button"",
+                    ""id"": ""a7ff71ae-35bc-43ac-bda8-6ffb79e94bc0"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""68f7f9c0-6469-42c9-b421-dcc788964bdb"",
+                    ""path"": ""*/{Submit}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Gamepad;Touch;Joystick;XR"",
+                    ""action"": ""DialogueSubmit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ec073c1b-1474-46f1-8509-086c0e6c29c3"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DialogueSubmit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f5ae993e-35c2-4cc2-8566-af0c925f34d5"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DialogueSubmit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b30b4451-bf3c-441a-bfa7-ef33a4fae9d2"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DialogueSubmit"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -1113,12 +1196,16 @@ namespace SLC.RetroHorror.Input
             m_UI_RightClick = m_UI.FindAction("RightClick", throwIfNotFound: true);
             m_UI_MiddleClick = m_UI.FindAction("MiddleClick", throwIfNotFound: true);
             m_UI_ScrollWheel = m_UI.FindAction("ScrollWheel", throwIfNotFound: true);
+            // Dialogue
+            m_Dialogue = asset.FindActionMap("Dialogue", throwIfNotFound: true);
+            m_Dialogue_DialogueSubmit = m_Dialogue.FindAction("DialogueSubmit", throwIfNotFound: true);
         }
 
         ~@InputMap()
         {
             UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, InputMap.Player.Disable() has not been called.");
             UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, InputMap.UI.Disable() has not been called.");
+            UnityEngine.Debug.Assert(!m_Dialogue.enabled, "This will cause a leak and performance issues, InputMap.Dialogue.Disable() has not been called.");
         }
 
         /// <summary>
@@ -1547,6 +1634,102 @@ namespace SLC.RetroHorror.Input
         /// Provides a new <see cref="UIActions" /> instance referencing this action map.
         /// </summary>
         public UIActions @UI => new UIActions(this);
+
+        // Dialogue
+        private readonly InputActionMap m_Dialogue;
+        private List<IDialogueActions> m_DialogueActionsCallbackInterfaces = new List<IDialogueActions>();
+        private readonly InputAction m_Dialogue_DialogueSubmit;
+        /// <summary>
+        /// Provides access to input actions defined in input action map "Dialogue".
+        /// </summary>
+        public struct DialogueActions
+        {
+            private @InputMap m_Wrapper;
+
+            /// <summary>
+            /// Construct a new instance of the input action map wrapper class.
+            /// </summary>
+            public DialogueActions(@InputMap wrapper) { m_Wrapper = wrapper; }
+            /// <summary>
+            /// Provides access to the underlying input action "Dialogue/DialogueSubmit".
+            /// </summary>
+            public InputAction @DialogueSubmit => m_Wrapper.m_Dialogue_DialogueSubmit;
+            /// <summary>
+            /// Provides access to the underlying input action map instance.
+            /// </summary>
+            public InputActionMap Get() { return m_Wrapper.m_Dialogue; }
+            /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+            public void Enable() { Get().Enable(); }
+            /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+            public void Disable() { Get().Disable(); }
+            /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+            public bool enabled => Get().enabled;
+            /// <summary>
+            /// Implicitly converts an <see ref="DialogueActions" /> to an <see ref="InputActionMap" /> instance.
+            /// </summary>
+            public static implicit operator InputActionMap(DialogueActions set) { return set.Get(); }
+            /// <summary>
+            /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+            /// </summary>
+            /// <param name="instance">Callback instance.</param>
+            /// <remarks>
+            /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+            /// </remarks>
+            /// <seealso cref="DialogueActions" />
+            public void AddCallbacks(IDialogueActions instance)
+            {
+                if (instance == null || m_Wrapper.m_DialogueActionsCallbackInterfaces.Contains(instance)) return;
+                m_Wrapper.m_DialogueActionsCallbackInterfaces.Add(instance);
+                @DialogueSubmit.started += instance.OnDialogueSubmit;
+                @DialogueSubmit.performed += instance.OnDialogueSubmit;
+                @DialogueSubmit.canceled += instance.OnDialogueSubmit;
+            }
+
+            /// <summary>
+            /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+            /// </summary>
+            /// <remarks>
+            /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+            /// </remarks>
+            /// <seealso cref="DialogueActions" />
+            private void UnregisterCallbacks(IDialogueActions instance)
+            {
+                @DialogueSubmit.started -= instance.OnDialogueSubmit;
+                @DialogueSubmit.performed -= instance.OnDialogueSubmit;
+                @DialogueSubmit.canceled -= instance.OnDialogueSubmit;
+            }
+
+            /// <summary>
+            /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="DialogueActions.UnregisterCallbacks(IDialogueActions)" />.
+            /// </summary>
+            /// <seealso cref="DialogueActions.UnregisterCallbacks(IDialogueActions)" />
+            public void RemoveCallbacks(IDialogueActions instance)
+            {
+                if (m_Wrapper.m_DialogueActionsCallbackInterfaces.Remove(instance))
+                    UnregisterCallbacks(instance);
+            }
+
+            /// <summary>
+            /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+            /// </summary>
+            /// <remarks>
+            /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+            /// </remarks>
+            /// <seealso cref="DialogueActions.AddCallbacks(IDialogueActions)" />
+            /// <seealso cref="DialogueActions.RemoveCallbacks(IDialogueActions)" />
+            /// <seealso cref="DialogueActions.UnregisterCallbacks(IDialogueActions)" />
+            public void SetCallbacks(IDialogueActions instance)
+            {
+                foreach (var item in m_Wrapper.m_DialogueActionsCallbackInterfaces)
+                    UnregisterCallbacks(item);
+                m_Wrapper.m_DialogueActionsCallbackInterfaces.Clear();
+                AddCallbacks(instance);
+            }
+        }
+        /// <summary>
+        /// Provides a new <see cref="DialogueActions" /> instance referencing this action map.
+        /// </summary>
+        public DialogueActions @Dialogue => new DialogueActions(this);
         private int m_KeyboardMouseSchemeIndex = -1;
         /// <summary>
         /// Provides access to the input control scheme.
@@ -1746,6 +1929,21 @@ namespace SLC.RetroHorror.Input
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnScrollWheel(InputAction.CallbackContext context);
+        }
+        /// <summary>
+        /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Dialogue" which allows adding and removing callbacks.
+        /// </summary>
+        /// <seealso cref="DialogueActions.AddCallbacks(IDialogueActions)" />
+        /// <seealso cref="DialogueActions.RemoveCallbacks(IDialogueActions)" />
+        public interface IDialogueActions
+        {
+            /// <summary>
+            /// Method invoked when associated input action "DialogueSubmit" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnDialogueSubmit(InputAction.CallbackContext context);
         }
     }
 }
