@@ -78,7 +78,7 @@ namespace SLC.RetroHorror.DataPersistence
                 //Creating directory for saves if it doesn't exist
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
                 //Serialize GameData object into a JSON file
-                string serializedGameState = JsonConvert.SerializeObject(GetSceneSave());
+                string serializedGameState = JsonConvert.SerializeObject(GetSceneSave(), Formatting.Indented);
                 //write data to file
                 using FileStream stream = new(path, FileMode.Create);
                 using StreamWriter writer = new(stream);
