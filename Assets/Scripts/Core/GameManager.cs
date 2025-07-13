@@ -3,7 +3,7 @@ using System.Linq;
 using SLC.RetroHorror.DataPersistence;
 using UnityEngine;
 
-namespace SLC.RetroHorror
+namespace SLC.RetroHorror.Core
 {
     public class GameManager : MonoBehaviour
     {

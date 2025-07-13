@@ -6,7 +6,7 @@ using UnityEngine;
 namespace SLC.RetroHorror.Core
 {
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerController : SaveableMonoBehavior
+    public class PlayerController : SaveableMonoBehaviour
     {
         [Header("Input Variables")]
         [SerializeField] private InputReader inputReader;

@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Linq;
 using System.IO;
 using UnityEngine.SceneManagement;
+using Unity.Plastic.Newtonsoft.Json;
 
 namespace SLC.RetroHorror.DataPersistence
 {
@@ -54,7 +55,7 @@ namespace SLC.RetroHorror.DataPersistence
                     dataToLoad = reader.ReadToEnd();
                 }
                 //deserialize loaded JSON file to string
-                SceneSaveData loadedData = JsonUtility.FromJson<SceneSaveData>(dataToLoad);
+                SceneSaveData loadedData = JsonConvert.DeserializeObject<SceneSaveData>(dataToLoad);
                 Debug.Log($"Loaded data:\n{dataToLoad}");
                 SetLoadedSceneSaveData(loadedData);
             }
@@ -77,7 +78,7 @@ namespace SLC.RetroHorror.DataPersistence
                 //Creating directory for saves if it doesn't exist
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
                 //Serialize GameData object into a JSON file
-                string serializedGameState = JsonUtility.ToJson(GetSceneSave(), true);
+                string serializedGameState = JsonConvert.SerializeObject(GetSceneSave(), Formatting.Indented);
                 //write data to file
                 using FileStream stream = new(path, FileMode.Create);
                 using StreamWriter writer = new(stream);
@@ -92,7 +93,7 @@ namespace SLC.RetroHorror.DataPersistence
         private void UpdateInstanceCache()
         {
             instanceCache = new();
-            FindObjectsByType<SaveableMonoBehavior>(FindObjectsSortMode.None).ToList().
+            FindObjectsByType<SaveableMonoBehaviour>(FindObjectsSortMode.None).ToList().
                 ForEach((saveable) => instanceCache.Add(saveable.ID, saveable));
         }
 
