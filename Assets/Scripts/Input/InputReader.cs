@@ -276,7 +276,6 @@ namespace SLC.RetroHorror.Input
 
         public void OnDialogueSubmit(InputAction.CallbackContext context)
         {
-            Debug.Log("inputted submit");
             if (context.phase == InputActionPhase.Started)
             {
                 DialogueSubmitEvent?.Invoke();
