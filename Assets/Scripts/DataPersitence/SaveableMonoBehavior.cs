@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SLC.RetroHorror.DataPersistence
 {
     [RequireComponent(typeof(UniqueId))]
-    public class SaveableMonoBehavior : MonoBehaviour, IDataPersistence
+    public class SaveableMonoBehaviour : MonoBehaviour, IDataPersistence
     {
         private UniqueId uniqueIdComponent;
         public string ID => uniqueIdComponent.uniqueId;

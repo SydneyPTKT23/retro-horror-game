@@ -22,7 +22,7 @@ Once upon a time... #narrator
 
 === example_choice(example) ===
 ~ g_example = example
-- They lived happily ever after. #narrator
+- They lived happily ever after. #narrator #function: TestFunction
 ~ g_test_seen = true
 - Example result: {example}. #narrator
 

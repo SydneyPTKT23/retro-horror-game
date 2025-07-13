@@ -13,6 +13,7 @@ namespace SLC.RetroHorror.DataPersistence
         public Dictionary<string, bool> bools = new();
         public Dictionary<string, int> ints = new();
         public Dictionary<string, float> floats = new();
+        public Dictionary<string, string> strings = new();
     }
 
     [System.Serializable]

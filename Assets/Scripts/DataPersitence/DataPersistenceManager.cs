@@ -92,7 +92,7 @@ namespace SLC.RetroHorror.DataPersistence
         private void UpdateInstanceCache()
         {
             instanceCache = new();
-            FindObjectsByType<SaveableMonoBehavior>(FindObjectsSortMode.None).ToList().
+            FindObjectsByType<SaveableMonoBehaviour>(FindObjectsSortMode.None).ToList().
                 ForEach((saveable) => instanceCache.Add(saveable.ID, saveable));
         }
 

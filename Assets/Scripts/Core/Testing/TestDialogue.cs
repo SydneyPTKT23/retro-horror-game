@@ -6,6 +6,7 @@ namespace SLC.RetroHorror.Core
     public class TestDialogue : MonoBehaviour
     {
         [SerializeField] TextAsset testAsset;
+        [SerializeField] private string[] externalFunctions;
         [SerializeField] private Color seenColor;
         [SerializeField] private Color unSeenColor;
         private Image image;
@@ -24,7 +25,7 @@ namespace SLC.RetroHorror.Core
 
         public void RunTestDialogue()
         {
-            DialogueManager.Instance.EnterDialogue(testAsset, null);
+            DialogueManager.Instance.EnterDialogue(testAsset, externalFunctions, null);
         }
     }
 }

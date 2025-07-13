@@ -1,4 +1,5 @@
 using Ink.Runtime;
+using SLC.RetroHorror.DataPersistence;
 using SLC.RetroHorror.Input;
 using System;
 using System.Collections;
@@ -11,9 +12,9 @@ using UnityEngine.UI;
 
 namespace SLC.RetroHorror.Core
 {
-    public class DialogueManager : MonoBehaviour
+    [RequireComponent(typeof(DialogueFunctions))]
+    public class DialogueManager : SaveableMonoBehaviour
     {
-
         #region variables
 
         public static DialogueManager Instance { get; private set; }
@@ -27,7 +28,9 @@ namespace SLC.RetroHorror.Core
 
         [Header("Dialogue")]
         [SerializeField] private TextAsset globalInkVariables;
-        private DialogueVariables dialogueVariables;
+        private List<string> functionsToCall = new();
+        public DialogueVariables dialogueVariables { get; private set; }
+        private DialogueFunctions dialogueFunctions;
         [SerializeField] private Sprite fallbackPortrait;
         [SerializeField] private AudioClip fallbackVoice;
         [SerializeField] private GameObject portraitBG;
@@ -59,8 +62,10 @@ namespace SLC.RetroHorror.Core
 
         #region standard methods
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
+
             if (Instance != null && Instance != this)
             {
                 Debug.Log("Found more than one DialogueManager, fixing.");
@@ -73,6 +78,8 @@ namespace SLC.RetroHorror.Core
             }
 
             dialogueVariables = new(globalInkVariables);
+
+            dialogueFunctions = GetComponent<DialogueFunctions>();
 
             input.DialogueSubmitCancelledEvent += HandleSubmit;
 
@@ -95,14 +102,15 @@ namespace SLC.RetroHorror.Core
         #region dialogue methods
 
         //this enters dialogue with the inkJSON file assigned to the npc
-        public void EnterDialogue(TextAsset inkJSON, Action _doAfterDialogue = null)
+        public void EnterDialogue(TextAsset _inkJSON, string[] _externalFunctions = null, Action _doAfterDialogue = null)
         {
             input.EnableDialogueInput();
 
             //first this sets the ink story as the active dialogue and activates dialogue panel
-            currentStory = new Story(inkJSON.text);
+            currentStory = new Story(_inkJSON.text);
             dialogueVariables.StartListening(currentStory);
             doAfterDialogue = _doAfterDialogue;
+
             dialoguePanel.SetActive(true);
 
             //continue story prints dialogue so it's called here
@@ -202,8 +210,10 @@ namespace SLC.RetroHorror.Core
             string displayedText;
             int alphaIndex = 0;
             WaitForSeconds realTypeTime = new(maxTypeTime / typeSpeed);
+            functionsToCall = new();
 
             SetSpeakerData();
+            TryCallFunctionsFromTags();
             // voiceSource.Play();
 
             foreach (char c in originalText.ToCharArray())
@@ -231,8 +241,9 @@ namespace SLC.RetroHorror.Core
             //grab tags from current line and show either player portrait or NPC portrait based on last tag in list
             if (currentStory.currentTags.Any())
             {
-                string _speakerId = "";
-                NPCData.Emotion _speakerEmotion = NPCData.Emotion.neutral;
+                bool lineIsNarrator = false;
+                string speakerId = "";
+                NPCData.Emotion speakerEmotion = NPCData.Emotion.neutral;
 
                 foreach (string tag in currentStory.currentTags)
                 {
@@ -243,14 +254,22 @@ namespace SLC.RetroHorror.Core
                         dialogueImage.sprite = fallbackPortrait;
                         voiceSource.clip = narratorData.voiceClip;
                         portraitBG.SetActive(false);
-                        return;
+                        lineIsNarrator = true;
                     }
                     else if (tag.Contains("speaker:"))
                     {
                         //parse out clean speaker id from tag
-                        _speakerId = tag.Replace("speaker:", null);
-                        _speakerId = _speakerId.Replace(" ", null);
-                        Debug.Log($"Found speaker tag: \"{_speakerId}\"");
+                        speakerId = tag.Replace("speaker:", null);
+                        speakerId = speakerId.Replace(" ", null);
+                        Debug.Log($"Found speaker tag: \"{speakerId}\"");
+                    }
+                    else if (tag.Contains("function:"))
+                    {
+                        //parse out clean function name from tag
+                        string functionName = tag.Replace("function:", null);
+                        functionName = functionName.Replace(" ", null);
+                        functionsToCall.Add(functionName);
+                        Debug.Log($"Found function tag: \"{functionName}\"");
                     }
                     else if (tag.Contains("emotion:"))
                     {
@@ -260,24 +279,26 @@ namespace SLC.RetroHorror.Core
                         Debug.Log($"Found emotion tag: \"{_emotion}\"");
 
                         //try to parse emotion string to enum, use neutral on failure
-                        if (!Enum.TryParse(_emotion, out _speakerEmotion))
-                            _speakerEmotion = NPCData.Emotion.neutral;
+                        if (!Enum.TryParse(_emotion, out speakerEmotion))
+                            speakerEmotion = NPCData.Emotion.neutral;
                     }
                 }
 
-                NPCData _speakerData;
+                if (lineIsNarrator) return;
+
+                NPCData speakerData;
 
                 //try to get a reference to speaker data based on parsed id string
                 try
                 {
-                    _speakerData = npcDatas.Where(data => data.speakerId == _speakerId).First();
+                    speakerData = npcDatas.Where(data => data.speakerId == speakerId).First();
 
-                    dialogueSpeaker.text = _speakerData.speakerName;
+                    dialogueSpeaker.text = speakerData.speakerName;
 
-                    dialogueImage.sprite = _speakerData.GetActiveSprite(_speakerEmotion);
+                    dialogueImage.sprite = speakerData.GetActiveSprite(speakerEmotion);
                     if (dialogueImage.sprite == null) dialogueImage.sprite = fallbackPortrait;
 
-                    voiceSource.clip = _speakerData.voiceClip;
+                    voiceSource.clip = speakerData.voiceClip;
                     if (voiceSource.clip == null) voiceSource.clip = fallbackVoice;
                 }
                 //couldn't find speaker data based on parsed string
@@ -298,6 +319,13 @@ namespace SLC.RetroHorror.Core
             }
 
             portraitBG.SetActive(true);
+        }
+
+        private void TryCallFunctionsFromTags()
+        {
+            if (functionsToCall == null || functionsToCall.Count == 0) return;
+
+            functionsToCall.ForEach(func => dialogueFunctions.Invoke(func, 0f));
         }
 
         public Ink.Runtime.Object GetVariableState(string _variableName)
@@ -348,13 +376,36 @@ namespace SLC.RetroHorror.Core
         }
 
         #endregion
+
+        #region data persistence
+
+        private const string dialogueVariablesKey = "dialogueVariables";
+
+        public override void Load(SaveData data)
+        {
+            base.Load(data);
+            Debug.Log($"{data.strings["test"]}");
+            TextAsset loadedText = new(data.strings[dialogueVariablesKey]);
+            globalInkVariables = loadedText;
+        }
+
+        public override SaveData Save()
+        {
+            SaveData save = base.Save();
+            save.strings.Add(dialogueVariablesKey, globalInkVariables.text);
+            save.strings.Add("test", "hello char");
+
+            return save;
+        }
+
+        #endregion
     }
 
     #region dialogue variables
 
     public class DialogueVariables
     {
-        public Dictionary<string, Ink.Runtime.Object> variables { get; private set; }
+        public Dictionary<string, Ink.Runtime.Object> variables { get; set; }
 
         public DialogueVariables(TextAsset _globalVariableAsset)
         {

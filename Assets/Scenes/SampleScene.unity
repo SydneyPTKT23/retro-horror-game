@@ -1794,6 +1794,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   testAsset: {fileID: 4900000, guid: edbe3334cd6b53c4ea14c2c76c8a3f60, type: 3}
+  externalFunctions:
+  - TestDialogue
   seenColor: {r: 0.4986205, g: 0.7830189, b: 0.53537357, a: 1}
   unSeenColor: {r: 0.8773585, g: 0.47592562, b: 0.47592562, a: 1}
 --- !u!114 &1025340792
@@ -2124,9 +2126,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1220601573}
   - component: {fileID: 1220601572}
+  - component: {fileID: 1220601574}
+  - component: {fileID: 1220601575}
   m_Layer: 0
   m_Name: DialogueManager
-  m_TagString: Untagged
+  m_TagString: DialogueManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2173,6 +2177,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1220601574
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1220601571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc8f81dd270b38548be679ca7b66016a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1220601575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1220601571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 944b4a441fc597c48bd346911d6b577c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uniqueId: dialogue_manager
 --- !u!1 &1222483375
 GameObject:
   m_ObjectHideFlags: 0
@@ -2804,7 +2833,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 949994523}
         m_TargetAssemblyTypeName: SLC.RetroHorror.DataPersistence.DataPersistenceManager,
           SLC.RetroHorror.DataPersistence
         m_MethodName: SaveGame
@@ -4396,7 +4425,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 949994523}
         m_TargetAssemblyTypeName: SLC.RetroHorror.DataPersistence.DataPersistenceManager,
           SLC.RetroHorror.DataPersistence
         m_MethodName: LoadGame
