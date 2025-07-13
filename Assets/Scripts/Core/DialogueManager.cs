@@ -28,6 +28,7 @@ namespace SLC.RetroHorror.Core
 
         [Header("Dialogue")]
         [SerializeField] private TextAsset globalInkVariables;
+        private Story inkVariablesStory;
         private List<string> functionsToCall = new();
         public DialogueVariables dialogueVariables { get; private set; }
         private DialogueFunctions dialogueFunctions;
@@ -77,7 +78,8 @@ namespace SLC.RetroHorror.Core
                 DontDestroyOnLoad(gameObject);
             }
 
-            dialogueVariables = new(globalInkVariables);
+            inkVariablesStory = new Story(globalInkVariables.text);
+            dialogueVariables = new(inkVariablesStory);
 
             dialogueFunctions = GetComponent<DialogueFunctions>();
 
@@ -331,7 +333,7 @@ namespace SLC.RetroHorror.Core
         public Ink.Runtime.Object GetVariableState(string _variableName)
         {
             Ink.Runtime.Object _variableValue = null;
-            dialogueVariables.variables.TryGetValue(_variableName, out _variableValue);
+            dialogueVariables.dialogueVariables.TryGetValue(_variableName, out _variableValue);
             if (_variableValue == null)
             {
                 Debug.LogWarning($"{_variableName} was null, did you mean to reference it?");
@@ -384,16 +386,18 @@ namespace SLC.RetroHorror.Core
         public override void Load(SaveData data)
         {
             base.Load(data);
-            Debug.Log($"{data.strings["test"]}");
-            TextAsset loadedText = new(data.strings[dialogueVariablesKey]);
-            globalInkVariables = loadedText;
+            inkVariablesStory.state.LoadJson(data.strings[dialogueVariablesKey]);
+            dialogueVariables = new(inkVariablesStory);
         }
 
         public override SaveData Save()
         {
             SaveData save = base.Save();
-            save.strings.Add(dialogueVariablesKey, globalInkVariables.text);
-            save.strings.Add("test", "hello char");
+
+            dialogueVariables.VariablesToStory(ref inkVariablesStory);
+            string varStoryToSave = inkVariablesStory.state.ToJson();
+            save.strings.Add(dialogueVariablesKey, varStoryToSave);
+            Debug.Log(varStoryToSave);
 
             return save;
         }
@@ -405,17 +409,16 @@ namespace SLC.RetroHorror.Core
 
     public class DialogueVariables
     {
-        public Dictionary<string, Ink.Runtime.Object> variables { get; set; }
+        public Dictionary<string, Ink.Runtime.Object> dialogueVariables { get; set; }
 
-        public DialogueVariables(TextAsset _globalVariableAsset)
+        public DialogueVariables(Story _globalVariableStory)
         {
-            Story _globalVariableStory = new(_globalVariableAsset.text);
-            variables = new();
+            dialogueVariables = new();
 
             foreach (string name in _globalVariableStory.variablesState)
             {
                 var value = _globalVariableStory.variablesState.GetVariableWithName(name);
-                variables.Add(name, value);
+                dialogueVariables.Add(name, value);
                 Debug.Log($"Variable global dialogue initialized: {name} = {value}");
             }
         }
@@ -435,15 +438,15 @@ namespace SLC.RetroHorror.Core
         {
             Debug.Log($"Variable changed: {_varName} = {_value}");
 
-            if (variables.ContainsKey(_varName))
+            if (dialogueVariables.ContainsKey(_varName))
             {
-                variables[_varName] = _value;
+                dialogueVariables[_varName] = _value;
             }
         }
 
-        private void VariablesToStory(ref Story _story)
+        public void VariablesToStory(ref Story _story)
         {
-            foreach (var variable in variables)
+            foreach (var variable in dialogueVariables)
             {
                 _story.variablesState.SetGlobal(variable.Key, variable.Value);
             }
