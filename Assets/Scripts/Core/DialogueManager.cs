@@ -327,13 +327,14 @@ namespace SLC.RetroHorror.Core
         {
             if (functionsToCall == null || functionsToCall.Count == 0) return;
 
+            //Invoke is relatively safe and doesn't produce errors even if func is misspelled
+            //So miraculously there's no need for error handling
             functionsToCall.ForEach(func => dialogueFunctions.Invoke(func, 0f));
         }
 
         public Ink.Runtime.Object GetVariableState(string _variableName)
         {
-            Ink.Runtime.Object _variableValue = null;
-            dialogueVariables.dialogueVariables.TryGetValue(_variableName, out _variableValue);
+            dialogueVariables.dialogueVariables.TryGetValue(_variableName, out Ink.Runtime.Object _variableValue);
             if (_variableValue == null)
             {
                 Debug.LogWarning($"{_variableName} was null, did you mean to reference it?");
