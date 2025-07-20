@@ -393,14 +393,13 @@ namespace SLC.RetroHorror.Core
 
         public override SaveData Save()
         {
-            SaveData save = base.Save();
+            SaveData data = base.Save();
 
             dialogueVariables.VariablesToStory(ref inkVariablesStory);
             string varStoryToSave = inkVariablesStory.state.ToJson();
-            save.strings.Add(dialogueVariablesKey, varStoryToSave);
-            Debug.Log(varStoryToSave);
+            data.strings.Add(dialogueVariablesKey, varStoryToSave);
 
-            return save;
+            return data;
         }
 
         #endregion

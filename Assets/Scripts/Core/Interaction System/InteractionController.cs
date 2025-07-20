@@ -33,20 +33,6 @@ namespace SLC.RetroHorror.Core
             if (!interactables.Contains(interactable))
             {
                 interactables.Add(interactable);
-
-                //Sort available colliders by distance to player, do interaction with closest interactable
-                interactables.OrderBy(col => Vector3.Distance(player.position, col.transform.position));
-
-                for (int i = 0; i < interactables.Count; i++)
-                {
-                    bool closestActivated = false;
-                    if (!closestActivated)
-                    {
-                        interactables[i].ActivateIndicator();
-                        closestActivated = true;
-                    }
-                    else interactables[i].DeactivateIndicator();
-                }
             }
         }
 
@@ -57,20 +43,6 @@ namespace SLC.RetroHorror.Core
             if (interactables.Contains(interactable))
             {
                 interactables.Remove(interactable);
-
-                //Sort available colliders by distance to player, do interaction with closest interactable
-                interactables.OrderBy(col => Vector3.Distance(player.position, col.transform.position));
-
-                for (int i = 0; i < interactables.Count; i++)
-                {
-                    bool closestActivated = false;
-                    if (!closestActivated)
-                    {
-                        interactables[i].ActivateIndicator();
-                        closestActivated = true;
-                    }
-                    else interactables[i].DeactivateIndicator();
-                }
             }
         }
 
@@ -80,6 +52,8 @@ namespace SLC.RetroHorror.Core
             interactables[0].OnInteract(this);
         }
 
+        #region input
+
         private void HandleInteractDown()
         {
             TryInteract();
@@ -88,6 +62,33 @@ namespace SLC.RetroHorror.Core
         private void HandleInteractUp()
         {
 
+        }
+
+        private void UnsubscribeInputs()
+        {
+            inputReader.InteractEvent -= HandleInteractDown;
+            inputReader.InteractEventCancelled -= HandleInteractUp;
+        }
+
+        #endregion
+
+        private void SortInteractables()
+        {
+            List<InteractableBase> oldOrder = interactables;
+            //Sort available colliders by distance to player, do interaction with closest interactable
+            interactables = interactables.OrderBy(col => Vector3.Distance(player.position, col.transform.position)).ToList();
+            if (oldOrder[0] == interactables[0]) return;
+
+            bool closestActivated = false;
+            for (int i = 0; i < interactables.Count; i++)
+            {
+                if (!closestActivated)
+                {
+                    interactables[i].ActivateIndicator();
+                    closestActivated = true;
+                }
+                else interactables[i].DeactivateIndicator();
+            }
         }
 
         public void RemoveColliderFromInteractableList(InteractableBase _interactable)
