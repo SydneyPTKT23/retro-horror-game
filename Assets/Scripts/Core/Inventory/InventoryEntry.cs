@@ -17,7 +17,7 @@ namespace SLC.RetroHorror.Core
             ItemMaxStack = _item.ItemMaxStack;
             UsesAmmo = _item.UsesAmmo;
             AmmoId = _item.AmmoId;
-            Weight = _item.Weight;
+            ItemWeight = _item.ItemWeight;
             ItemMesh = _item.ItemMesh;
             ItemMaterial = _item.ItemMaterial;
             Amount = _amount;

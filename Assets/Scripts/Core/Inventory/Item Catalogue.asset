@@ -13,24 +13,23 @@ MonoBehaviour:
   m_Name: Item Catalogue
   m_EditorClassIdentifier: 
   allItems:
-  - <ItemId>k__BackingField: revolver01
-    <ItemName>k__BackingField: Colt 1911
-    <ItemDescription>k__BackingField: A low-power revolver. Still quite capable of
-      killing a person
-    <ItemType>k__BackingField: 0
-    <UsesAmmo>k__BackingField: 1
-    <AmmoId>k__BackingField: ammo01
-    <ItemMaxStack>k__BackingField: 1
-    <Weight>k__BackingField: 3
-    <ItemMesh>k__BackingField: {fileID: 0}
-    <ItemMaterial>k__BackingField: {fileID: 0}
-  - <ItemId>k__BackingField: ammo01
-    <ItemName>k__BackingField: .45 cal ammo
-    <ItemDescription>k__BackingField: .45 caliper rounds, fit for various weapons
-    <ItemType>k__BackingField: 2
-    <UsesAmmo>k__BackingField: 0
-    <AmmoId>k__BackingField: 
-    <ItemMaxStack>k__BackingField: 24
-    <Weight>k__BackingField: 0.04
-    <ItemMesh>k__BackingField: {fileID: 0}
-    <ItemMaterial>k__BackingField: {fileID: 0}
+  - ItemId: revolver_01
+    ItemName: 
+    ItemDescription: 
+    ItemType: 0
+    UsesAmmo: 0
+    AmmoId: 
+    ItemMaxStack: 0
+    Weight: 0
+    ItemMesh: {fileID: 0}
+    ItemMaterial: {fileID: 0}
+  - ItemId: 
+    ItemName: 
+    ItemDescription: 
+    ItemType: 0
+    UsesAmmo: 0
+    AmmoId: 
+    ItemMaxStack: 0
+    Weight: 0
+    ItemMesh: {fileID: 0}
+    ItemMaterial: {fileID: 0}
