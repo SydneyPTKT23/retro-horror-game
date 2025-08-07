@@ -17,19 +17,19 @@ MonoBehaviour:
     ItemName: 
     ItemDescription: 
     ItemType: 0
-    UsesAmmo: 0
+    UsesAmmo: 1
     AmmoId: 
     ItemMaxStack: 0
-    Weight: 0
+    ItemWeight: 0
     ItemMesh: {fileID: 0}
     ItemMaterial: {fileID: 0}
   - ItemId: 
     ItemName: 
     ItemDescription: 
-    ItemType: 0
+    ItemType: 1
     UsesAmmo: 0
     AmmoId: 
     ItemMaxStack: 0
-    Weight: 0
+    ItemWeight: 0
     ItemMesh: {fileID: 0}
     ItemMaterial: {fileID: 0}
