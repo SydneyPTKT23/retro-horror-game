@@ -11,7 +11,7 @@ namespace SLC.RetroHorror.Core
         public InventoryEntry(Item _item, int _amount = 1)
         {
             ItemId = _item.ItemId;
-            ItemName = _item.ItemId;
+            ItemName = _item.ItemName;
             ItemDescription = _item.ItemDescription;
             ItemType = _item.ItemType;
             ItemMaxStack = _item.ItemMaxStack;

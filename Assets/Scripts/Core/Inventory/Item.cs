@@ -30,8 +30,6 @@ namespace SLC.RetroHorror.Core
         public float ItemWeight;
         public Mesh ItemMesh;
         public Material ItemMaterial;
-        
-        //TODO : HIDE USESAMMO AND AMMOID IF NOT RANGEWEAPON
     }
 
     [CustomPropertyDrawer(typeof(Item))]
@@ -68,12 +66,12 @@ namespace SLC.RetroHorror.Core
             container.Add(typeField);
 
             typeField.RegisterValueChangeCallback((callback) =>
-                {
-                    bool canUseAmmo = (Item.Type)callback.changedProperty.enumValueIndex == Item.Type.RangeWeapon;
-                    ToggleFieldVisibility(canUseAmmo, ref usesAmmoField);
-                    if (!canUseAmmo) usesAmmoProperty.boolValue = false;
-                    property.serializedObject.ApplyModifiedProperties();
-                });
+            {
+                bool canUseAmmo = (Item.Type)callback.changedProperty.enumValueIndex == Item.Type.RangeWeapon;
+                ToggleFieldVisibility(canUseAmmo, ref usesAmmoField);
+                if (!canUseAmmo) usesAmmoProperty.boolValue = false;
+                property.serializedObject.ApplyModifiedProperties();
+            });
 
             usesAmmoField.RegisterValueChangeCallback((callback) =>
             {

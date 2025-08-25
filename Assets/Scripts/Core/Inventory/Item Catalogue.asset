@@ -13,23 +13,45 @@ MonoBehaviour:
   m_Name: Item Catalogue
   m_EditorClassIdentifier: 
   allItems:
-  - ItemId: revolver_01
-    ItemName: 
-    ItemDescription: 
+  - ItemId: pistol_01
+    ItemName: Colt 1911
+    ItemDescription: A trusty pistol with an older design, capable of dealing significant
+      damage.
     ItemType: 0
     UsesAmmo: 1
-    AmmoId: 
-    ItemMaxStack: 0
-    ItemWeight: 0
+    AmmoId: 45_cal_acp
+    ItemMaxStack: 1
+    ItemWeight: 0.7
     ItemMesh: {fileID: 0}
     ItemMaterial: {fileID: 0}
-  - ItemId: 
-    ItemName: 
-    ItemDescription: 
-    ItemType: 1
+  - ItemId: 45_cal_acp
+    ItemName: .45 ACP
+    ItemDescription: .45 ACP ammo, used by a variety of firearms, handguns especially.
+    ItemType: 2
     UsesAmmo: 0
     AmmoId: 
-    ItemMaxStack: 0
-    ItemWeight: 0
+    ItemMaxStack: 24
+    ItemWeight: 0.01
+    ItemMesh: {fileID: 0}
+    ItemMaterial: {fileID: 0}
+  - ItemId: revolver_01
+    ItemName: Remington Model 1875
+    ItemDescription: A slightly rarer sight these days, this revolver would be right
+      at home in a cowboy's holster.
+    ItemType: 0
+    UsesAmmo: 1
+    AmmoId: 45_cal_lc
+    ItemMaxStack: 1
+    ItemWeight: 0.9
+    ItemMesh: {fileID: 0}
+    ItemMaterial: {fileID: 0}
+  - ItemId: 45_cal_lc
+    ItemName: .45 Long Colt
+    ItemDescription: A longer .45 caliber ammo used by some older firearms.
+    ItemType: 2
+    UsesAmmo: 0
+    AmmoId: 
+    ItemMaxStack: 24
+    ItemWeight: 0.04
     ItemMesh: {fileID: 0}
     ItemMaterial: {fileID: 0}

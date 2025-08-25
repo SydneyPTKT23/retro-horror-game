@@ -24,7 +24,7 @@ namespace SLC.RetroHorror.Core
             else if (_amount < 0)
             {
                 string warning = string.Concat("You are using AddItem to try to remove items from an inventory, ",
-                "this is untested and can potentially break things!");
+                "this is unintended and can potentially break things!");
                 Debug.LogWarning(warning);
             }
             else if (_amount == 0)
@@ -50,27 +50,7 @@ namespace SLC.RetroHorror.Core
 
         public void AddItem(Item _item, int _amount = 1)
         {
-            if (_item == null) return;
-            else if (_amount < 0)
-            {
-                string warning = string.Concat("You are using AddItem to try to remove items from an inventory, ",
-                "this is untested and can potentially break things!");
-                Debug.LogWarning(warning);
-            }
-            else if (_amount == 0)
-            {
-                Debug.LogWarning("Unnecessary AddItem call, remove this.");
-            }
-
-            //Edge cases have been handled, actual functionality below
-            if (InventoryItems.ContainsKey(_item.ItemId))
-            {
-                InventoryItems[_item.ItemId].Amount += _amount;
-            }
-            else
-            {
-                InventoryItems.Add(_item.ItemId, new InventoryEntry(_item, _amount));
-            }
+            AddItem(_item.ItemId, _amount);
         }
 
         /// <summary>
