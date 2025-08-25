@@ -57,6 +57,9 @@ namespace SLC.RetroHorror.Core
         [SerializeField] private float inputScaler = 5f;
         [SerializeField] private float movementScaler = 5f;
 
+        [Header("Inventory")]
+        [SerializeField] private Inventory inventory;
+
         [Space, Header("DEBUG")]
         [SerializeField] private Vector2 inputVector;
         [SerializeField] private Vector2 scaledMovementInput;
@@ -124,6 +127,10 @@ namespace SLC.RetroHorror.Core
             //Subscribe to input methods
             inputReader.EnablePlayerInput();
             SubscribeInputEvents();
+
+            inventory.AddItem("pistol_01");
+            inventory.AddItem("45_cal_acp", 10);
+            inventory.AddItem("45_cal_acp", 1);
         }
 
         private void Update()

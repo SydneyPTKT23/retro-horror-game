@@ -1,8 +1,9 @@
+using SLC.RetroHorror.DataPersistence;
 using UnityEngine;
 
 namespace SLC.RetroHorror.Core
 {
-    public class InteractableBase : MonoBehaviour, IInteractable
+    public class InteractableBase : SaveableMonoBehaviour, IInteractable
     {
         [Space, Header("Interaction Settings")]
         [SerializeField] private bool isInteractable = true;
@@ -13,8 +14,18 @@ namespace SLC.RetroHorror.Core
         #region Properties
         public bool IsInteractable => isInteractable;
         public string InteractionMessage => interactionMessage;
+        public Collider InteractCollider { get; private set; }
 
         #endregion
+
+        protected virtual void Start()
+        {
+            if (!TryGetComponent<Collider>(out Collider attachedCollider))
+            {
+                Debug.LogWarning($"Interactable {gameObject.name} does not have the collider required for interaction!");
+            }
+            InteractCollider = attachedCollider;
+        }
 
         public virtual void OnInteract(InteractionController controller)
         {

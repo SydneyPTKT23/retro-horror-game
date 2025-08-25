@@ -7,11 +7,14 @@ namespace SLC.RetroHorror.Core
 {
     public class GameManager : MonoBehaviour
     {
+        [SerializeField] private ItemCatalogue itemCatalogue;
+
         #region Default Methods
 
         private void Awake()
         {
             CheckForDuplicateIds();
+            itemCatalogue.InitializeItemDictionary();
         }
 
         #endregion
